@@ -38,9 +38,13 @@ jobs:
         python -m pytest tests --log-level=INFO
     - name: Coverage
       run: |
-        python -m pytest tests --cov=pub --cov-report=html --no-cov-on-fail tests
+        coverage run -m pytest tests
+        coverage html
     - name: Archive code coverage results
       uses: actions/upload-artifact@v2
       with:
         name: code-coverage-report
-        path: html
+        path: htmlcov
+    - name: Coverage Text Report
+      run: |
+        coverage report -m --fail-under=50
