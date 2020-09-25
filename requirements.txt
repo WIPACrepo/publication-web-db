@@ -1,7 +1,8 @@
+coverage
 pytest
 pytest-asyncio
 pytest-mock
-coverage
+pytest-cov
 flake8
 requests
 cryptography
