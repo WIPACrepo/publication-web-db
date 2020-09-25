@@ -40,11 +40,11 @@ jobs:
       run: |
         coverage run -m pytest tests
         coverage html
-    - name: Archive code coverage results
-      uses: actions/upload-artifact@v2
-      with:
-        name: code-coverage-report
-        path: htmlcov
+    - name: Upload code coverage results
+      run: |
+        cd htmlcov && tar -zcf ../htmlcov.tar.gz
+        curl -F 'data=@htmlcov.tar.gz' https://${{ secrets.DOCS_USERNAME }}:${{ secrets.DOCS_PASSWORD }}@docs.icecube.aq/upload?path=${{ github.repository }}/${{ github.ref }}
+        echo "Coverage report available on https://docs.icecube.aq/${{ github.repository }}/${{ github.ref }}"
     - name: Coverage Text Report
       run: |
         coverage report -m --fail-under=50
