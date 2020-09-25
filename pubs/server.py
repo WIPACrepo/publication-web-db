@@ -5,15 +5,14 @@ Server for publication db
 import os
 import logging
 import binascii
-from functools import partial, wraps
+from functools import wraps
 from urllib.parse import urlparse
 from datetime import datetime
 import base64
 
-import tornado.web
-from tornado.web import RequestHandler, StaticFileHandler, HTTPError
+from tornado.web import RequestHandler, HTTPError
 from rest_tools.server import RestServer, from_environment
-from rest_tools.server import catch_error, authenticated
+# from rest_tools.server import catch_error, authenticated
 
 import motor.motor_asyncio
 
@@ -32,7 +31,7 @@ def basic_auth(method):
                 self.set_status(401)
                 self.finish()
                 return
-            raise tornado.web.HTTPError(403, reason="authentication failed")
+            raise HTTPError(403, reason="authentication failed")
         return await method(self, *args, **kwargs)
     return wrapper
 
@@ -71,7 +70,7 @@ class BaseHandler(RequestHandler):
 
     def get_current_user(self):
         try:
-            type,data = self.request.headers['Authorization'].split(' ', 1)
+            type, data = self.request.headers['Authorization'].split(' ', 1)
             if type.lower() != 'basic':
                 raise Exception('bad header type')
             logger.debug(f'auth data: {data}')
@@ -95,7 +94,7 @@ class Main(BaseHandler):
         pubs = []
         async for row in self.db.publications.find(search, projection={'_id': False}):
             pubs.append(row)
-        pubs.sort(key=lambda pub: pub['date'],reverse=True)
+        pubs.sort(key=lambda pub: pub['date'], reverse=True)
 
         self.render('main.html', publications=pubs)
 
@@ -109,8 +108,8 @@ class New(BaseHandler):
         self.render('new.html', )
 
 def create_server():
-    static_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),'static')
-    template_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),'templates')
+    static_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
+    template_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 
     default_config = {
         'HOST': 'localhost',
@@ -118,12 +117,12 @@ def create_server():
         'DEBUG': False,
         'DB_URL': 'mongodb://localhost/pub_db',
         'COOKIE_SECRET': binascii.hexlify(b'secret').decode('utf-8'),
-        'BASIC_AUTH': '', # user:pass,user:pass
+        'BASIC_AUTH': '',  # user:pass,user:pass
     }
     config = from_environment(default_config)
 
     logging.info(f'DB: {config["DB_URL"]}')
-    db_url, db_name = config['DB_URL'].rsplit('/',1)
+    db_url, db_name = config['DB_URL'].rsplit('/', 1)
     logging.info(f'DB name: {db_name}')
     db = motor.motor_asyncio.AsyncIOMotorClient(db_url)
 
