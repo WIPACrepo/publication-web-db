@@ -8,7 +8,9 @@ import binascii
 from functools import partial, wraps
 from urllib.parse import urlparse
 from datetime import datetime
+import base64
 
+import tornado.web
 from tornado.web import RequestHandler, StaticFileHandler, HTTPError
 from rest_tools.server import RestServer, from_environment
 from rest_tools.server import catch_error, authenticated
