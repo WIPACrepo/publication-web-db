@@ -1,0 +1,11 @@
+pytest
+pytest-asyncio
+pytest-mock
+coverage
+requests
+cryptography
+pyjwt
+motor
+unidecode
+beautifulsoup4
+-e git+https://github.com/WIPACrepo/rest-tools@v0.2.0#egg=rest_tools

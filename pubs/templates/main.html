@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block main %}
+<div class="lookup">
+  <form action="{{ request.path }}" method="get">
+    <div><label for="title">Title: </label><input type="text" name="title" /></div>
+    <div><label for="type">Type: </label><select name="type">
+      {% for t in PUBLICATION_TYPES %}
+      <option value="{{ t }}">{{ PUBLICATION_TYPES[t] }}</option>
+      {% end %}
+    </select></div>
+    {% module xsrf_form_html() %}
+    <div><input type="submit" value="Filter" /></div>
+  </form>
+</div>
+<div class="publications">
+{% for pub in publications %}
+<article class="publication">
+  <div><span class="title">{{ pub['title'] }}</span></div>
+  <div><span class="authors">
+    {% for author in pub['authors'] %}
+    <span class="author">{{ author }}</span>
+    {% end %}
+  </span></div>
+  <div><span class="type">({{ PUBLICATION_TYPES[pub['type']] }})</span>
+  <span class="journals">
+    {% for journal in pub['journals'] %}
+    <span class="journal">{{ journal }}</span>{% end %},</span>
+  <span class="date">{{ date_format(pub['date']) }}</span></div>
+  <div><span class="downloads">Download:
+    {% for link in pub['downloads'] %}
+    <span class="download"><a href="{{ link }}" target="_blank">{{ domain(link) }}</a></span>
+    {% end %}</span>
+    <span class="projects">Project:
+    {% for project in pub['projects'] %}<span class="project">{{ PROJECTS[project] }}</span>{% end %}
+    </span>
+  </div>
+</article>
+{% end %}
+</div>
+{% end %}

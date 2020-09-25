@@ -6,7 +6,7 @@ Publication Website / Database
 
 ### Main (route: /)
 
-Main route displays publications, and can be filtered.
+Displays publications, and can be filtered.
 
 Filters:
 * Project
@@ -22,9 +22,9 @@ Filters:
 
 Can also disable displaying projects, to lock to a single one.
 
-### New (Route: /new)
+### New (route: /new)
 
-New route adds a publication, if authorized to do so.
+Adds a publication, if authorized to do so.
 
 ## Publication Details
 
