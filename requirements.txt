@@ -2,6 +2,7 @@ pytest
 pytest-asyncio
 pytest-mock
 coverage
+flake8
 requests
 cryptography
 pyjwt
