@@ -4,9 +4,12 @@
 name: Python package
 
 on:
-  push
-  pull_request
-  workflow_dispatch
+  push:
+    branches: [ $default-branch ]
+  pull_request:
+    types: [assigned, opened, synchronize, reopened]
+  workflow_dispatch:
+    branches: [ $default-branch ]
 
 jobs:
   build:
