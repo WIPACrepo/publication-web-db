@@ -1,0 +1,20 @@
+# Delete coverage artifact after deleting a branch or closing a pull request
+
+name: Python package
+
+on:
+  delete:
+    branches: [ $default-branch ]
+  pull_request:
+    types: [closed]
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Delete html coverage
+      env:
+        USER: ${{ secrets.DOCS_USERNAME }}
+        PASS: ${{ secrets.DOCS_PASSWORD }}
+      run: |
+        curl -XDELETE "https://$USER:$PASS@docs.icecube.aq/api/upload?path=$GITHUB_REPOSITORY/$GITHUB_REF"
