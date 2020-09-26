@@ -48,7 +48,7 @@ jobs:
         USER: ${{ secrets.DOCS_USERNAME }}
         PASS: ${{ secrets.DOCS_PASSWORD }}
       run: |
-        curl -F 'data=@htmlcov.tar.gz' "https://$USER:$PASS@docs.icecube.aq/upload?path=$GITHUB_REPOSITORY/$GITHUB_REF"
+        curl --data-binary "@htmlcov.tar.gz" -XPUT "https://$USER:$PASS@docs.icecube.aq/api/upload?path=$GITHUB_REPOSITORY/$GITHUB_REF"
         echo "Coverage report available on https://docs.icecube.aq/$GITHUB_REPOSITORY/$GITHUB_REF"
     - name: Coverage Text Report
       run: |
