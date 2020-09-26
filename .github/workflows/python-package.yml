@@ -12,7 +12,7 @@ on:
     branches: [ $default-branch ]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -24,10 +24,6 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-  test:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
     - name: Lint with flake8
       run: |
         flake8 pubs --count --show-source --statistics
@@ -38,10 +34,6 @@ jobs:
     - name: Test with pytest
       run: |
         python -m pytest tests --log-level=INFO
-  coverage:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
     - name: Coverage
       run: |
         coverage run -m pytest tests
