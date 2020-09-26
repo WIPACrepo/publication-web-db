@@ -55,7 +55,7 @@ jobs:
             issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
-            body: "Coverage report available on https://docs.icecube.aq/" + context.rep.owner + "/" + context.repo.repo + "/" + context.ref
+            body: "Coverage report available on https://docs.icecube.aq/" + context.repo.owner + "/" + context.repo.repo + "/" + context.ref
           })
     - name: Coverage Text Report
       run: |
