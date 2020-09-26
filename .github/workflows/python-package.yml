@@ -39,12 +39,17 @@ jobs:
     - name: Coverage
       run: |
         coverage run -m pytest tests
-        coverage html
-    - name: Upload code coverage results
+    - name: Coverage html
       run: |
-        cd htmlcov && tar -zcf ../htmlcov.tar.gz
-        curl -F 'data=@htmlcov.tar.gz' https://${{ secrets.DOCS_USERNAME }}:${{ secrets.DOCS_PASSWORD }}@docs.icecube.aq/upload?path=${{ github.repository }}/${{ github.ref }}
-        echo "Coverage report available on https://docs.icecube.aq/${{ github.repository }}/${{ github.ref }}"
+        coverage html
+        cd htmlcov && tar -zcf ../htmlcov.tar.gz *
+    - name: Upload html coverage results
+      env:
+        USER: ${{ secrets.DOCS_USERNAME }}
+        PASS: ${{ secrets.DOCS_PASSWORD }}
+      run: |
+        curl -F 'data=@htmlcov.tar.gz' "https://$USER:$PASS@docs.icecube.aq/upload?path=$GITHUB_REPOSITORY/$GITHUB_REF"
+        echo "Coverage report available on https://docs.icecube.aq/$GITHUB_REPOSITORY/$GITHUB_REF"
     - name: Coverage Text Report
       run: |
         coverage report -m --fail-under=50
