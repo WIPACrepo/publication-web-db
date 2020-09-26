@@ -12,10 +12,8 @@ on:
     branches: [ $default-branch ]
 
 jobs:
-  test:
-
+  build:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python 3.8
@@ -26,6 +24,10 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
     - name: Lint with flake8
       run: |
         flake8 pubs --count --show-source --statistics
@@ -36,6 +38,10 @@ jobs:
     - name: Test with pytest
       run: |
         python -m pytest tests --log-level=INFO
+  coverage:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
     - name: Coverage
       run: |
         coverage run -m pytest tests
@@ -49,7 +55,16 @@ jobs:
         PASS: ${{ secrets.DOCS_PASSWORD }}
       run: |
         curl --data-binary "@htmlcov.tar.gz" -XPUT "https://$USER:$PASS@docs.icecube.aq/api/upload?path=$GITHUB_REPOSITORY/$GITHUB_REF"
-        echo "Coverage report available on https://docs.icecube.aq/$GITHUB_REPOSITORY/$GITHUB_REF"
+    - uses: actions/github-script@v3
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          github.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: 'Coverage report available on https://docs.icecube.aq/$GITHUB_REPOSITORY/$GITHUB_REF'
+          })
     - name: Coverage Text Report
       run: |
         coverage report -m --fail-under=50
