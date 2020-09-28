@@ -115,6 +115,28 @@ async def test_multi_project(server):
     assert pubs[1].select('.project')[0].string == 'IceCube'
 
 @pytest.mark.asyncio
+async def test_hide_projects(server):
+    db, url = server
+
+    await add_pub(db, title='Test Title', authors=['auth'],
+                  pub_type="journal", journals=["TestJournal"], date=nowstr(),
+                  links=[], projects=['icecube'])
+
+    await add_pub(db, title='Test Title2', authors=['auth'],
+                  pub_type="journal", journals=["TestJournal"], date=nowstr(),
+                  links=[], projects=['hawc'])
+
+    pubs = await get_pubs(url, params={'projects': 'hawc', 'hide_projects': True})
+    assert len(pubs) == 1
+    assert pubs[0].select('.title')[0].string == 'Test Title2'
+    assert pubs[0].select('.project') == []
+
+    pubs = await get_pubs(url, params={'projects': 'hawc', 'hide_projects': 'false'})
+    assert len(pubs) == 1
+    assert pubs[0].select('.title')[0].string == 'Test Title2'
+    assert pubs[0].select('.project') != []
+
+@pytest.mark.asyncio
 async def test_dates(server):
     db, url = server
 

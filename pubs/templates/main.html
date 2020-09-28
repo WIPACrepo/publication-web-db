@@ -4,11 +4,18 @@
 <div class="lookup">
   <form action="{{ request.path }}" method="get">
     <div><label for="title">Title: </label><input type="text" name="title" /></div>
-    <div><label for="type">Type: </label><select name="type">
+    <div><label for="type">Type: </label><select name="type" multiple>
       {% for t in PUBLICATION_TYPES %}
       <option value="{{ t }}">{{ PUBLICATION_TYPES[t] }}</option>
       {% end %}
     </select></div>
+    {% if not hide_projects %}
+    <div><label for="type">Project: </label><select name="projects" multiple>
+      {% for p in PROJECTS %}
+      <option value="{{ p }}">{{ PROJECTS[p] }}</option>
+      {% end %}
+    </select></div>
+    {% end %}
     {% module xsrf_form_html() %}
     <div><input type="submit" value="Filter" /></div>
   </form>
@@ -31,8 +38,10 @@
     {% for link in pub['downloads'] %}
     <span class="download"><a href="{{ link }}" target="_blank">{{ domain(link) }}</a></span>
     {% end %}</span>
-    <span class="projects">Project:
-    {% for project in pub['projects'] %}<span class="project">{{ PROJECTS[project] }}</span>{% end %}
+    {% if not hide_projects %}
+      <span class="projects">Project:
+      {% for project in pub['projects'] %}<span class="project">{{ PROJECTS[project] }}</span>{% end %}
+    {% end %}
     </span>
   </div>
 </article>
