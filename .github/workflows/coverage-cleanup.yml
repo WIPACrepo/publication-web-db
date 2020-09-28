@@ -1,6 +1,6 @@
 # Delete coverage artifact after deleting a branch or closing a pull request
 
-name: Python package
+name: Coverage cleanup
 
 on:
   delete:
