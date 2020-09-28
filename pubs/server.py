@@ -42,10 +42,13 @@ def get_domain(link):
     return urlparse(link).netloc
 
 def date_format(datestring):
-    if '.' in datestring:
-        date = datetime.strptime(datestring, "%Y-%m-%dT%H:%M:%S.%f")
+    if 'T' in datestring:
+        if '.' in datestring:
+            date = datetime.strptime(datestring, "%Y-%m-%dT%H:%M:%S.%f")
+        else:
+            date = datetime.strptime(datestring, "%Y-%m-%dT%H:%M:%S")
     else:
-        date = datetime.strptime(datestring, "%Y-%m-%dT%H:%M:%S")
+        date = datetime.strptime(datestring, "%Y-%m-%d")
     return date.strftime("%d %B %Y")
 
 class BaseHandler(RequestHandler):
@@ -90,6 +93,14 @@ class Main(BaseHandler):
         search = {}
         if projects := self.get_arguments('projects'):
             search['projects'] = {"$in": projects}
+        start = self.get_argument('start_date', None)
+        end = self.get_argument('end_date', None)
+        if start and end:
+            search['date'] = {"$gte": start, "$lte": end}
+        elif start:
+            search['date'] = {"$gte": start}
+        elif end:
+            search['date'] = {"$lte": end}
 
         pubs = []
         async for row in self.db.publications.find(search, projection={'_id': False}):

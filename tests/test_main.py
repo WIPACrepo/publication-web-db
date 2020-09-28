@@ -115,3 +115,41 @@ async def test_multi_project(server):
     assert pubs[0].select('.project')[0].string == 'HAWC'
     assert pubs[1].select('.title')[0].string == 'Test Title'
     assert pubs[1].select('.project')[0].string == 'IceCube'
+
+@pytest.mark.asyncio
+async def test_dates(server):
+    db, url = server
+
+    await add_pub(db, title='Test Title1', authors=['auth'],
+                  pub_type="journal", journals=["TestJournal"], date='2020-01-02',
+                  links=[], projects=['icecube'])
+
+    await add_pub(db, title='Test Title2', authors=['auth'],
+                  pub_type="journal", journals=["TestJournal"], date='2020-02-03',
+                  links=[], projects=['icecube'])
+
+    await add_pub(db, title='Test Title3', authors=['auth'],
+                  pub_type="journal", journals=["TestJournal"], date='2020-03-04',
+                  links=[], projects=['icecube'])
+
+    pubs = await get_pubs(url, params={'start_date': '2020-02-02'})
+    assert len(pubs) == 2
+    # order by reversed date
+    assert pubs[0].select('.title')[0].string == 'Test Title3'
+    assert pubs[1].select('.title')[0].string == 'Test Title2'
+
+    pubs = await get_pubs(url, params={'end_date': '2020-02-02'})
+    assert len(pubs) == 1
+    # order by reversed date
+    assert pubs[0].select('.title')[0].string == 'Test Title1'
+
+    pubs = await get_pubs(url, params={'start_date': '2020-02-01', 'end_date': '2020-03-01'})
+    assert len(pubs) == 1
+    # order by reversed date
+    assert pubs[0].select('.title')[0].string == 'Test Title2'
+
+    pubs = await get_pubs(url, params={'start_date': '2020-04-01'})
+    assert len(pubs) == 0
+
+    pubs = await get_pubs(url, params={'end_date': '2019-04-01'})
+    assert len(pubs) == 0
