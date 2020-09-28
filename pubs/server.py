@@ -91,8 +91,10 @@ class BaseHandler(RequestHandler):
 class Main(BaseHandler):
     async def get(self):
         search = {}
+
         if projects := self.get_arguments('projects'):
             search['projects'] = {"$in": projects}
+
         start = self.get_argument('start_date', None)
         end = self.get_argument('end_date', None)
         if start and end:
@@ -101,6 +103,9 @@ class Main(BaseHandler):
             search['date'] = {"$gte": start}
         elif end:
             search['date'] = {"$lte": end}
+
+        if types := self.get_arguments('type'):
+            search['type'] = {"$in": types}
 
         pubs = []
         async for row in self.db.publications.find(search, projection={'_id': False}):
