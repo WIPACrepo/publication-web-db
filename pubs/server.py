@@ -114,12 +114,14 @@ class Main(BaseHandler):
         if authors := self.get_arguments('authors'):
             search['authors'] = {"$in": authors}
 
+        hide_projects = self.get_argument('hide_projects', 'false').lower() == 'true'
+
         pubs = []
         async for row in self.db.publications.find(search, projection={'_id': False}):
             pubs.append(row)
         pubs.sort(key=lambda pub: pub['date'], reverse=True)
 
-        self.render('main.html', publications=pubs)
+        self.render('main.html', publications=pubs, hide_projects=hide_projects)
 
 class New(BaseHandler):
     @basic_auth
