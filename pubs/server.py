@@ -9,7 +9,6 @@ from functools import wraps
 from urllib.parse import urlparse
 from datetime import datetime
 import base64
-import asyncio
 
 from tornado.web import RequestHandler, HTTPError
 from rest_tools.server import RestServer, from_environment
@@ -111,6 +110,9 @@ class Main(BaseHandler):
 
         if title := self.get_argument('title', None):
             search['$text'] = {"$search": title}
+
+        if authors := self.get_arguments('authors'):
+            search['authors'] = {"$in": authors}
 
         pubs = []
         async for row in self.db.publications.find(search, projection={'_id': False}):

@@ -183,7 +183,6 @@ async def test_types(server):
     assert pubs[0].select('.title')[0].string == 'Test Title3'
     assert pubs[1].select('.title')[0].string == 'Test Title1'
 
-
 @pytest.mark.asyncio
 async def test_title(server):
     db, url = server
@@ -203,3 +202,35 @@ async def test_title(server):
     pubs = await get_pubs(url, params={'title': 'title1'})
     assert len(pubs) == 1
     assert pubs[0].select('.title')[0].string == 'Test Title1'
+
+@pytest.mark.asyncio
+async def test_authors(server):
+    db, url = server
+
+    await add_pub(db, title='Test Title1', authors=['auth1'],
+                  pub_type="journal", journals=["TestJournal"], date=nowstr(),
+                  links=[], projects=['icecube'])
+
+    await add_pub(db, title='Test Title2', authors=['auth2'],
+                  pub_type="proceeding", journals=["TestJournal"], date=nowstr(),
+                  links=[], projects=['icecube'])
+
+    await add_pub(db, title='Test Title3', authors=['auth1', 'auth3'],
+                  pub_type="thesis", journals=["TestJournal"], date=nowstr(),
+                  links=[], projects=['icecube'])
+
+    pubs = await get_pubs(url, params={'authors': 'auth1'})
+    assert len(pubs) == 2
+    assert pubs[0].select('.title')[0].string == 'Test Title3'
+    assert pubs[1].select('.title')[0].string == 'Test Title1'
+
+    pubs = await get_pubs(url, params={'authors': 'auth2'})
+    assert len(pubs) == 1
+    assert pubs[0].select('.title')[0].string == 'Test Title2'
+
+    pubs = await get_pubs(url, params={'authors': 'auth3'})
+    assert len(pubs) == 1
+    assert pubs[0].select('.title')[0].string == 'Test Title3'
+
+    pubs = await get_pubs(url, params={'authors': 'auth4'})
+    assert len(pubs) == 0
