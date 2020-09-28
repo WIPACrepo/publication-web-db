@@ -1,4 +1,3 @@
-from datetime import datetime
 import asyncio
 
 import pytest
@@ -6,11 +5,10 @@ from rest_tools.client import AsyncSession
 from bs4 import BeautifulSoup
 
 from pubs import PUBLICATION_TYPES
+from pubs.utils import nowstr
 
 from .util import port, mongo_client, server
 
-def nowstr():
-    return datetime.utcnow().isoformat()
 
 async def get_pubs(*args, **kwargs):
     s = AsyncSession(retries=0)
@@ -140,12 +138,10 @@ async def test_dates(server):
 
     pubs = await get_pubs(url, params={'end_date': '2020-02-02'})
     assert len(pubs) == 1
-    # order by reversed date
     assert pubs[0].select('.title')[0].string == 'Test Title1'
 
     pubs = await get_pubs(url, params={'start_date': '2020-02-01', 'end_date': '2020-03-01'})
     assert len(pubs) == 1
-    # order by reversed date
     assert pubs[0].select('.title')[0].string == 'Test Title2'
 
     pubs = await get_pubs(url, params={'start_date': '2020-04-01'})
@@ -172,21 +168,38 @@ async def test_types(server):
 
     pubs = await get_pubs(url, params={'type': 'journal'})
     assert len(pubs) == 1
-    # order by reversed date
     assert pubs[0].select('.title')[0].string == 'Test Title1'
 
     pubs = await get_pubs(url, params={'type': 'proceeding'})
     assert len(pubs) == 1
-    # order by reversed date
     assert pubs[0].select('.title')[0].string == 'Test Title2'
 
     pubs = await get_pubs(url, params={'type': 'thesis'})
     assert len(pubs) == 1
-    # order by reversed date
     assert pubs[0].select('.title')[0].string == 'Test Title3'
 
     pubs = await get_pubs(url, params={'type': ['journal','thesis']})
     assert len(pubs) == 2
-    # order by reversed date
     assert pubs[0].select('.title')[0].string == 'Test Title3'
     assert pubs[1].select('.title')[0].string == 'Test Title1'
+
+
+@pytest.mark.asyncio
+async def test_title(server):
+    db, url = server
+
+    await add_pub(db, title='Test Title1', authors=['auth'],
+                  pub_type="journal", journals=["TestJournal"], date=nowstr(),
+                  links=[], projects=['icecube'])
+
+    await add_pub(db, title='Test Title2', authors=['auth'],
+                  pub_type="proceeding", journals=["TestJournal"], date=nowstr(),
+                  links=[], projects=['icecube'])
+
+    await add_pub(db, title='Test Title3', authors=['auth'],
+                  pub_type="thesis", journals=["TestJournal"], date=nowstr(),
+                  links=[], projects=['icecube'])
+
+    pubs = await get_pubs(url, params={'title': 'title1'})
+    assert len(pubs) == 1
+    assert pubs[0].select('.title')[0].string == 'Test Title1'

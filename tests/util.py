@@ -8,6 +8,7 @@ from rest_tools.server import from_environment
 import motor.motor_asyncio
 
 from pubs.server import create_server
+from pubs.utils import create_indexes
 
 @pytest.fixture
 def port():
@@ -26,11 +27,12 @@ async def mongo_client():
        'DB_URL': 'mongodb://localhost/pub_db',
     }
     config = from_environment(default_config)
-    db = motor.motor_asyncio.AsyncIOMotorClient(config['DB_URL'])
-    db_name = config['DB_URL'].split('/')[-1]
+    db_url, db_name = config['DB_URL'].rsplit('/', 1)
+    db = motor.motor_asyncio.AsyncIOMotorClient(db_url)
     ret = db[db_name]
 
     await ret.publications.drop()
+    create_indexes(db_url, db_name, background=False)
     try:
         yield ret
     finally:
