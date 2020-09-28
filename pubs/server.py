@@ -9,6 +9,7 @@ from functools import wraps
 from urllib.parse import urlparse
 from datetime import datetime
 import base64
+import asyncio
 
 from tornado.web import RequestHandler, HTTPError
 from rest_tools.server import RestServer, from_environment
@@ -18,6 +19,7 @@ import motor.motor_asyncio
 
 from . import __version__ as version
 from . import PUBLICATION_TYPES, PROJECTS
+from .utils import create_indexes
 
 logger = logging.getLogger('server')
 
@@ -107,6 +109,9 @@ class Main(BaseHandler):
         if types := self.get_arguments('type'):
             search['type'] = {"$in": types}
 
+        if title := self.get_argument('title', None):
+            search['$text'] = {"$search": title}
+
         pubs = []
         async for row in self.db.publications.find(search, projection={'_id': False}):
             pubs.append(row)
@@ -141,6 +146,7 @@ def create_server():
     db_url, db_name = config['DB_URL'].rsplit('/', 1)
     logging.info(f'DB name: {db_name}')
     db = motor.motor_asyncio.AsyncIOMotorClient(db_url)
+    create_indexes(db_url, db_name)
 
     users = {v.split(':')[0]: v.split(':')[1] for v in config['BASIC_AUTH'].split(',') if v}
     logging.info(f'BASIC_AUTH users: {users.keys()}')
