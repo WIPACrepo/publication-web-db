@@ -103,7 +103,9 @@ div.indent {
 div.double_indent {
     margin-left: 2em;
 }
-
+div.inline {
+    display: inline-block;
+}
 
 div.error_box {
     display: inline-block;
@@ -114,8 +116,38 @@ div.error_box {
     border-radius: .2em;
 }
 
+
 article {
     margin: 1em 0 2em;
+}
+
+.lookup form {
+    display: flex;
+    flex-wrap: wrap;
+}
+.lookup div.col {
+    margin-right: 4rem;
+}
+.lookup div.input {
+    display: flex;
+    align-items: start;
+    flex-wrap: wrap;
+    margin: .5rem;
+}
+.lookup div.input>label {
+    vertical-align: top;
+    padding-right: 1rem;
+}
+.lookup .type_box {
+    display: inline-block;
+}
+.lookup div.search, .lookup div.submit {
+    width: 100%;
+    align-items: center;
+}
+div.search input {
+    width: 100%;
+    max-width: 40rem;
 }
 
 .publication .title {
@@ -130,12 +162,11 @@ article {
 .publication .downloads .download:not(:first-child)::before {
     content: "| ";
 }
-.publication .projects {
-    margin-left: 1rem;
+.publication .downloads {
+    margin-right: 1rem;
 }
 .publication .projects .project:not(:first-child)::before {
     content: ", ";
 }
-
 
 

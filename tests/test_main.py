@@ -17,13 +17,13 @@ async def get_pubs(*args, **kwargs):
     soup = BeautifulSoup(r.content, 'html.parser')
     return soup.select('.publication')
 
-async def add_pub(db, title, authors, pub_type, journals, date, links, projects):
+async def add_pub(db, title, authors, pub_type, citation, date, links, projects):
     assert pub_type in PUBLICATION_TYPES
     data = {
         "title": title,
         "authors": authors,
         "type": pub_type,
-        "journals": journals,
+        "citation": citation,
         "date": date,
         "downloads": links,
         "projects": projects,
@@ -42,7 +42,7 @@ async def test_single_pub(server):
     db, url = server
 
     await add_pub(db, title='Test Title', authors=['auth'],
-                  pub_type="journal", journals=["TestJournal"], date=nowstr(),
+                  pub_type="journal", citation="TestJournal", date=nowstr(),
                   links=[], projects=['icecube'])
 
     pubs = await get_pubs(url)
@@ -56,15 +56,15 @@ async def test_multiple_pubs(server):
     db, url = server
 
     await add_pub(db, title='Test Title', authors=['auth'],
-                  pub_type="journal", journals=["TestJournal"], date=nowstr(),
+                  pub_type="journal", citation="TestJournal", date=nowstr(),
                   links=[], projects=['icecube'])
 
     await add_pub(db, title='Test Title2', authors=['auth'],
-                  pub_type="journal", journals=["TestJournal"], date=nowstr(),
+                  pub_type="journal", citation="TestJournal", date=nowstr(),
                   links=[], projects=['icecube'])
 
     await add_pub(db, title='Test Title3', authors=['auth'],
-                  pub_type="journal", journals=["TestJournal"], date=nowstr(),
+                  pub_type="journal", citation="TestJournal", date=nowstr(),
                   links=[], projects=['icecube'])
 
     pubs = await get_pubs(url)
@@ -79,11 +79,11 @@ async def test_project(server):
     db, url = server
 
     await add_pub(db, title='Test Title', authors=['auth'],
-                  pub_type="journal", journals=["TestJournal"], date=nowstr(),
+                  pub_type="journal", citation="TestJournal", date=nowstr(),
                   links=[], projects=['icecube'])
 
     await add_pub(db, title='Test Title2', authors=['auth'],
-                  pub_type="journal", journals=["TestJournal"], date=nowstr(),
+                  pub_type="journal", citation="TestJournal", date=nowstr(),
                   links=[], projects=['hawc'])
 
     pubs = await get_pubs(url, params={'projects': 'hawc'})
@@ -96,15 +96,15 @@ async def test_multi_project(server):
     db, url = server
 
     await add_pub(db, title='Test Title', authors=['auth'],
-                  pub_type="journal", journals=["TestJournal"], date=nowstr(),
+                  pub_type="journal", citation="TestJournal", date=nowstr(),
                   links=[], projects=['icecube'])
 
     await add_pub(db, title='Test Title2', authors=['auth'],
-                  pub_type="journal", journals=["TestJournal"], date=nowstr(),
+                  pub_type="journal", citation="TestJournal", date=nowstr(),
                   links=[], projects=['hawc'])
 
     await add_pub(db, title='Test Title3', authors=['auth'],
-                  pub_type="journal", journals=["TestJournal"], date=nowstr(),
+                  pub_type="journal", citation="TestJournal", date=nowstr(),
                   links=[], projects=['ara'])
 
     pubs = await get_pubs(url, params={'projects': ['hawc', 'icecube']})
@@ -119,11 +119,11 @@ async def test_hide_projects(server):
     db, url = server
 
     await add_pub(db, title='Test Title', authors=['auth'],
-                  pub_type="journal", journals=["TestJournal"], date=nowstr(),
+                  pub_type="journal", citation="TestJournal", date=nowstr(),
                   links=[], projects=['icecube'])
 
     await add_pub(db, title='Test Title2', authors=['auth'],
-                  pub_type="journal", journals=["TestJournal"], date=nowstr(),
+                  pub_type="journal", citation="TestJournal", date=nowstr(),
                   links=[], projects=['hawc'])
 
     pubs = await get_pubs(url, params={'projects': 'hawc', 'hide_projects': True})
@@ -141,15 +141,15 @@ async def test_dates(server):
     db, url = server
 
     await add_pub(db, title='Test Title1', authors=['auth'],
-                  pub_type="journal", journals=["TestJournal"], date='2020-01-02',
+                  pub_type="journal", citation="TestJournal", date='2020-01-02',
                   links=[], projects=['icecube'])
 
     await add_pub(db, title='Test Title2', authors=['auth'],
-                  pub_type="journal", journals=["TestJournal"], date='2020-02-03',
+                  pub_type="journal", citation="TestJournal", date='2020-02-03',
                   links=[], projects=['icecube'])
 
     await add_pub(db, title='Test Title3', authors=['auth'],
-                  pub_type="journal", journals=["TestJournal"], date='2020-03-04',
+                  pub_type="journal", citation="TestJournal", date='2020-03-04',
                   links=[], projects=['icecube'])
 
     pubs = await get_pubs(url, params={'start_date': '2020-02-02'})
@@ -177,15 +177,15 @@ async def test_types(server):
     db, url = server
 
     await add_pub(db, title='Test Title1', authors=['auth'],
-                  pub_type="journal", journals=["TestJournal"], date=nowstr(),
+                  pub_type="journal", citation="TestJournal", date=nowstr(),
                   links=[], projects=['icecube'])
 
     await add_pub(db, title='Test Title2', authors=['auth'],
-                  pub_type="proceeding", journals=["TestJournal"], date=nowstr(),
+                  pub_type="proceeding", citation="TestJournal", date=nowstr(),
                   links=[], projects=['icecube'])
 
     await add_pub(db, title='Test Title3', authors=['auth'],
-                  pub_type="thesis", journals=["TestJournal"], date=nowstr(),
+                  pub_type="thesis", citation="TestJournal", date=nowstr(),
                   links=[], projects=['icecube'])
 
     pubs = await get_pubs(url, params={'type': 'journal'})
@@ -210,15 +210,15 @@ async def test_title(server):
     db, url = server
 
     await add_pub(db, title='Test Title1', authors=['auth'],
-                  pub_type="journal", journals=["TestJournal"], date=nowstr(),
+                  pub_type="journal", citation="TestJournal", date=nowstr(),
                   links=[], projects=['icecube'])
 
     await add_pub(db, title='Test Title2', authors=['auth'],
-                  pub_type="proceeding", journals=["TestJournal"], date=nowstr(),
+                  pub_type="proceeding", citation="TestJournal", date=nowstr(),
                   links=[], projects=['icecube'])
 
     await add_pub(db, title='Test Title3', authors=['auth'],
-                  pub_type="thesis", journals=["TestJournal"], date=nowstr(),
+                  pub_type="thesis", citation="TestJournal", date=nowstr(),
                   links=[], projects=['icecube'])
 
     pubs = await get_pubs(url, params={'title': 'title1'})
@@ -230,15 +230,15 @@ async def test_authors(server):
     db, url = server
 
     await add_pub(db, title='Test Title1', authors=['auth1'],
-                  pub_type="journal", journals=["TestJournal"], date=nowstr(),
+                  pub_type="journal", citation="TestJournal", date=nowstr(),
                   links=[], projects=['icecube'])
 
     await add_pub(db, title='Test Title2', authors=['auth2'],
-                  pub_type="proceeding", journals=["TestJournal"], date=nowstr(),
+                  pub_type="proceeding", citation="TestJournal", date=nowstr(),
                   links=[], projects=['icecube'])
 
     await add_pub(db, title='Test Title3', authors=['auth1', 'auth3'],
-                  pub_type="thesis", journals=["TestJournal"], date=nowstr(),
+                  pub_type="thesis", citation="TestJournal", date=nowstr(),
                   links=[], projects=['icecube'])
 
     pubs = await get_pubs(url, params={'authors': 'auth1'})

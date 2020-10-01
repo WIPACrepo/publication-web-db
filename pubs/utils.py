@@ -16,6 +16,8 @@ def create_indexes(db_url, db_name, background=True):
     if 'date_index' not in indexes:
         logging.info('creating date_index')
         db.publications.create_index('date', name='date_index', background=background)
-    if 'title_index' not in indexes:
-        logging.info('creating title_index')
-        db.publications.create_index([('title', pymongo.TEXT)], name='title_index', background=background)
+    if 'text_index' not in indexes:
+        logging.info('creating text_index')
+        db.publications.create_index([('title', pymongo.TEXT), ('authors', pymongo.TEXT), ('citation', pymongo.TEXT)],
+                                     weights={'title': 10, 'authors': 5, 'citation': 1},
+                                     name='text_index', background=background)

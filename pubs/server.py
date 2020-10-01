@@ -88,49 +88,100 @@ class BaseHandler(RequestHandler):
             logger.info('failed auth', exc_info=True)
         return None
 
-
-class Main(BaseHandler):
-    async def get(self):
-        search = {}
+    async def get_pubs(self):
+        match = {}
 
         if projects := self.get_arguments('projects'):
-            search['projects'] = {"$in": projects}
+            match['projects'] = {"$in": projects}
 
         start = self.get_argument('start_date', None)
         end = self.get_argument('end_date', None)
         if start and end:
-            search['date'] = {"$gte": start, "$lte": end}
+            match['date'] = {"$gte": start, "$lte": end}
         elif start:
-            search['date'] = {"$gte": start}
+            match['date'] = {"$gte": start}
         elif end:
-            search['date'] = {"$lte": end}
+            match['date'] = {"$lte": end}
 
         if types := self.get_arguments('type'):
-            search['type'] = {"$in": types}
+            match['type'] = {"$in": types}
 
-        if title := self.get_argument('title', None):
-            search['$text'] = {"$search": title}
+        if search := self.get_argument('search', None):
+            match['$text'] = {"$search": search}
 
         if authors := self.get_arguments('authors'):
-            search['authors'] = {"$in": authors}
-
-        hide_projects = self.get_argument('hide_projects', 'false').lower() == 'true'
-
+            match['authors'] = {"$in": authors}
+        
         pubs = []
-        async for row in self.db.publications.find(search, projection={'_id': False}):
+        async for row in self.db.publications.find(match, projection={'_id': False}):
             pubs.append(row)
         pubs.sort(key=lambda pub: pub['date'], reverse=True)
 
-        self.render('main.html', publications=pubs, hide_projects=hide_projects)
+        return {
+            "publications": pubs,
+            "projects": projects,
+            "start_date": start,
+            "end_date": end,
+            "type": types,
+            "search": search,
+            "authors": authors,
+        }
+
+    async def get_authors(self):
+        aggregation = [
+            {"$unwind": "$authors"},
+            {"$group": {
+                "_id": 0,
+                "authornames": {"$addToSet": "$authors"}
+            }}
+        ]
+        authors = []
+        async for row in self.db.publications.aggregate(aggregation):
+            authors = row["authors"]
+        return authors
+
+class Main(BaseHandler):
+    async def get(self):
+        hide_projects = self.get_argument('hide_projects', 'false').lower() == 'true'
+
+        pubs = await self.get_pubs()
+
+        self.render('main.html', **pubs, hide_projects=hide_projects)
+
+class Manage(BaseHandler):
+    @basic_auth
+    async def get(self):
+        pubs = await self.get_pubs()
+        self.render('manage.html', **pubs)
+
+    @basic_auth
+    async def post(self):
+        pubs = await self.get_pubs()
+        self.render('manage.html', **pubs)
 
 class New(BaseHandler):
     @basic_auth
     async def get(self):
-        self.render('new.html', )
+        existing_authors = await self.get_authors()
+        self.render('new.html', existing_authors=existing_authors)
 
     @basic_auth
     async def post(self):
-        self.render('new.html', )
+        try:
+            doc = {
+                'title': self.get_argument('title').strip(),
+                'authors': self.get_arguments('existing_authors')+[a.strip() for a in self.get_argument('new_authors').split('\n') if a.strip()],
+                'date': self.get_argument('date'),
+                'type': self.get_argument('type'),
+                'citation': self.get_argument('citation').strip(),
+                'downloads': [d.strip() for d in self.get_argument('downloads').split('\n') if d.strip()],
+                'projects': self.get_arguments('projects'),
+            }
+            await self.db.publications.insert_one(doc)
+
+            self.redirect('/')
+        except Exception as e:
+            self.render('new.html', error=e)
 
 def create_server():
     static_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
@@ -166,6 +217,7 @@ def create_server():
                         debug=config['DEBUG'])
 
     server.add_route(r'/', Main, main_args)
+    server.add_route(r'/manage', Manage, main_args)
     server.add_route(r'/new', New, main_args)
 
     server.startup(address=config['HOST'], port=config['PORT'])
