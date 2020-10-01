@@ -132,7 +132,10 @@ article {
     display: flex;
     align-items: start;
     flex-wrap: wrap;
-    margin: .5rem;
+    margin: .6rem .5rem;
+}
+.lookup div.input.vcenter {
+    align-items: center;
 }
 .lookup div.input>label {
     vertical-align: top;
@@ -150,6 +153,27 @@ div.search input {
     max-width: 40rem;
 }
 
+.new div.input {
+    display: flex;
+    align-items: start;
+    flex-wrap: wrap;
+    margin: 1rem .5rem;
+}
+.new div.input.vcenter {
+    align-items: center;
+}
+.new div.input>label {
+    vertical-align: top;
+    padding-right: 1rem;
+    width: 12rem;
+}
+.new select {
+    min-width: 15.5rem;
+}
+
+form, .publication {
+    line-height: 1.2rem;
+}
 .publication .title {
     font-style: italic;
 }
@@ -167,6 +191,9 @@ div.search input {
 }
 .publication .projects .project:not(:first-child)::before {
     content: ", ";
+}
+.publication form.edit {
+    margin: .2rem 0;
 }
 
 

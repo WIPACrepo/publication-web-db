@@ -13,8 +13,8 @@ import base64
 from tornado.web import RequestHandler, HTTPError
 from rest_tools.server import RestServer, from_environment
 # from rest_tools.server import catch_error, authenticated
-
 import motor.motor_asyncio
+from bson.objectid import ObjectId
 
 from . import __version__ as version
 from . import PUBLICATION_TYPES, PROJECTS
@@ -70,6 +70,8 @@ class BaseHandler(RequestHandler):
         namespace['title'] = ''
         namespace['PUBLICATION_TYPES'] = PUBLICATION_TYPES
         namespace['PROJECTS'] = PROJECTS
+        namespace['error'] = None
+        namespace['edit'] = False
         return namespace
 
     def get_current_user(self):
@@ -88,14 +90,14 @@ class BaseHandler(RequestHandler):
             logger.info('failed auth', exc_info=True)
         return None
 
-    async def get_pubs(self):
+    async def get_pubs(self, mongoid=False):
         match = {}
 
         if projects := self.get_arguments('projects'):
             match['projects'] = {"$in": projects}
 
-        start = self.get_argument('start_date', None)
-        end = self.get_argument('end_date', None)
+        start = self.get_argument('start_date', '')
+        end = self.get_argument('end_date', '')
         if start and end:
             match['date'] = {"$gte": start, "$lte": end}
         elif start:
@@ -106,14 +108,20 @@ class BaseHandler(RequestHandler):
         if types := self.get_arguments('type'):
             match['type'] = {"$in": types}
 
-        if search := self.get_argument('search', None):
+        if search := self.get_argument('search', ''):
             match['$text'] = {"$search": search}
 
         if authors := self.get_arguments('authors'):
             match['authors'] = {"$in": authors}
-        
+
+        kwargs = {}
+        if not mongoid:
+            kwargs['projection'] = {'_id': False}
+
         pubs = []
-        async for row in self.db.publications.find(match, projection={'_id': False}):
+        async for row in self.db.publications.find(match, **kwargs):
+            if mongoid:
+                row['_id'] = str(row['_id'])
             pubs.append(row)
         pubs.sort(key=lambda pub: pub['date'], reverse=True)
 
@@ -137,7 +145,7 @@ class BaseHandler(RequestHandler):
         ]
         authors = []
         async for row in self.db.publications.aggregate(aggregation):
-            authors = row["authors"]
+            authors = row["authornames"]
         return authors
 
 class Main(BaseHandler):
@@ -151,13 +159,19 @@ class Main(BaseHandler):
 class Manage(BaseHandler):
     @basic_auth
     async def get(self):
-        pubs = await self.get_pubs()
-        self.render('manage.html', **pubs)
+        pubs = await self.get_pubs(mongoid=True)
+        self.render('main.html', edit=True, **pubs, hide_projects=False)
 
     @basic_auth
     async def post(self):
-        pubs = await self.get_pubs()
-        self.render('manage.html', **pubs)
+        if action := self.get_argument('action', None):
+            mongoid = ObjectId(self.get_argument('pub_id'))
+            if action == 'delete':
+                await self.db.publications.delete_one({'_id': mongoid})
+            else:
+                raise HTTPError(400, reason='bad action')
+        pubs = await self.get_pubs(mongoid=True)
+        self.render('main.html', edit=True, **pubs, hide_projects=False)
 
 class New(BaseHandler):
     @basic_auth
@@ -179,7 +193,7 @@ class New(BaseHandler):
             }
             await self.db.publications.insert_one(doc)
 
-            self.redirect('/')
+            self.redirect('/manage')
         except Exception as e:
             self.render('new.html', error=e)
 

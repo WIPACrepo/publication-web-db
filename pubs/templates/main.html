@@ -2,12 +2,19 @@
 
 {% block main %}
 <h1>Publication Database</h1>
+{% if edit %}
+<div class="create">
+  <h2>New Publication</h2>
+  <a href="/new">Create a new publication here</a>
+</div>
+{% end %}
 <div class="lookup">
+  {% if edit %}<h2>Lookup</h2>{% end %}
   <form action="{{ request.path }}" method="get">
-    <div class="input search"><label for="search">Text search: </label><input type="text" name="search" value="{{ search }}" /></div>
+    <div class="input vcenter search"><label for="search">Text search: </label><input type="text" name="search" value="{{ search }}" /></div>
     <div class="col">
-      <div class="input"><label for="start_date">Start date: </label><input type="date" name="start_date" value="{{ start_date }}" /></div>
-      <div class="input"><label for="end_date">End date: </label><input type="date" name="end_date" value="{{ end_date }}" /></div>
+      <div class="input vcenter"><label for="start_date">Start date: </label><input type="date" name="start_date" value="{{ start_date }}" /></div>
+      <div class="input vcenter"><label for="end_date">End date: </label><input type="date" name="end_date" value="{{ end_date }}" /></div>
       <div class="input"><label for="type">Type: </label><div class="type_box">
         {% for t in PUBLICATION_TYPES %}
         <div class="checkbox">
@@ -29,7 +36,7 @@
       {% end %}
     </div>
     {% module xsrf_form_html() %}
-    <div class="input submit"><input type="submit" value="Filter" /></div>
+    <div class="input vcenter submit"><input type="submit" value="Filter" /></div>
   </form>
 </div>
 <h2>Selected Publications:</h2>
@@ -58,6 +65,19 @@
       {% for project in pub['projects'] %}<span class="project">{{ PROJECTS[project] }}</span>{% end %}
     {% end %}
     </span>
+    {% if edit %}
+    <form class="edit" action="{{ request.path }}" method="post">
+      {% module xsrf_form_html() %}
+      {% if search %}<input type="hidden" name="search" value="{{ search }}" />{% end %}
+      {% if start_date %}<input type="hidden" name="start_date" value="{{ start_date }}" />{% end %}
+      {% if end_date %}<input type="hidden" name="end_date" value="{{ end_date }}" />{% end %}
+      {% for t in type %}<input type="hidden" name="type" value="{{ t }}" />{% end %}
+      {% for p in projects %}<input type="hidden" name="projects" value="{{ p }}" />{% end %}
+      <input type="hidden" name="pub_id" value="{{ pub['_id'] }}" />
+      <input type="hidden" name="action" value="delete" />
+      <input type="submit" value="Delete" />
+    </form>
+    {% end %}
   </div>
 </article>
 {% end %}
