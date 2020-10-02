@@ -207,7 +207,7 @@ async def test_title(server):
                   pub_type="thesis", citation="TestJournal", date=nowstr(),
                   downloads=[], projects=['icecube'])
 
-    pubs = await get_pubs(url, params={'title': 'title1'})
+    pubs = await get_pubs(url, params={'search': 'title1'})
     assert len(pubs) == 1
     assert pubs[0].select('.title')[0].string == 'Test Title1'
 

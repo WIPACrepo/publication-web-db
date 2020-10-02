@@ -7,7 +7,6 @@ import logging
 import binascii
 from functools import wraps
 from urllib.parse import urlparse
-from datetime import datetime
 import base64
 
 from tornado.web import RequestHandler, HTTPError
