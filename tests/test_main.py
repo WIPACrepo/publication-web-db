@@ -4,8 +4,7 @@ import pytest
 from rest_tools.client import AsyncSession
 from bs4 import BeautifulSoup
 
-from pubs import PUBLICATION_TYPES
-from pubs.utils import nowstr
+from pubs.utils import nowstr, add_pub
 
 from .util import port, mongo_client, server
 
@@ -16,19 +15,6 @@ async def get_pubs(*args, **kwargs):
     r.raise_for_status()
     soup = BeautifulSoup(r.content, 'html.parser')
     return soup.select('.publication')
-
-async def add_pub(db, title, authors, pub_type, citation, date, links, projects):
-    assert pub_type in PUBLICATION_TYPES
-    data = {
-        "title": title,
-        "authors": authors,
-        "type": pub_type,
-        "citation": citation,
-        "date": date,
-        "downloads": links,
-        "projects": projects,
-    }
-    await db.publications.insert_one(data)
 
 @pytest.mark.asyncio
 async def test_no_pubs(server):
@@ -43,7 +29,7 @@ async def test_single_pub(server):
 
     await add_pub(db, title='Test Title', authors=['auth'],
                   pub_type="journal", citation="TestJournal", date=nowstr(),
-                  links=[], projects=['icecube'])
+                  downloads=[], projects=['icecube'])
 
     pubs = await get_pubs(url)
     assert len(pubs) == 1
@@ -57,15 +43,15 @@ async def test_multiple_pubs(server):
 
     await add_pub(db, title='Test Title', authors=['auth'],
                   pub_type="journal", citation="TestJournal", date=nowstr(),
-                  links=[], projects=['icecube'])
+                  downloads=[], projects=['icecube'])
 
     await add_pub(db, title='Test Title2', authors=['auth'],
                   pub_type="journal", citation="TestJournal", date=nowstr(),
-                  links=[], projects=['icecube'])
+                  downloads=[], projects=['icecube'])
 
     await add_pub(db, title='Test Title3', authors=['auth'],
                   pub_type="journal", citation="TestJournal", date=nowstr(),
-                  links=[], projects=['icecube'])
+                  downloads=[], projects=['icecube'])
 
     pubs = await get_pubs(url)
     assert len(pubs) == 3
@@ -80,11 +66,11 @@ async def test_project(server):
 
     await add_pub(db, title='Test Title', authors=['auth'],
                   pub_type="journal", citation="TestJournal", date=nowstr(),
-                  links=[], projects=['icecube'])
+                  downloads=[], projects=['icecube'])
 
     await add_pub(db, title='Test Title2', authors=['auth'],
                   pub_type="journal", citation="TestJournal", date=nowstr(),
-                  links=[], projects=['hawc'])
+                  downloads=[], projects=['hawc'])
 
     pubs = await get_pubs(url, params={'projects': 'hawc'})
     assert len(pubs) == 1
@@ -97,15 +83,15 @@ async def test_multi_project(server):
 
     await add_pub(db, title='Test Title', authors=['auth'],
                   pub_type="journal", citation="TestJournal", date=nowstr(),
-                  links=[], projects=['icecube'])
+                  downloads=[], projects=['icecube'])
 
     await add_pub(db, title='Test Title2', authors=['auth'],
                   pub_type="journal", citation="TestJournal", date=nowstr(),
-                  links=[], projects=['hawc'])
+                  downloads=[], projects=['hawc'])
 
     await add_pub(db, title='Test Title3', authors=['auth'],
                   pub_type="journal", citation="TestJournal", date=nowstr(),
-                  links=[], projects=['ara'])
+                  downloads=[], projects=['ara'])
 
     pubs = await get_pubs(url, params={'projects': ['hawc', 'icecube']})
     assert len(pubs) == 2
@@ -120,11 +106,11 @@ async def test_hide_projects(server):
 
     await add_pub(db, title='Test Title', authors=['auth'],
                   pub_type="journal", citation="TestJournal", date=nowstr(),
-                  links=[], projects=['icecube'])
+                  downloads=[], projects=['icecube'])
 
     await add_pub(db, title='Test Title2', authors=['auth'],
                   pub_type="journal", citation="TestJournal", date=nowstr(),
-                  links=[], projects=['hawc'])
+                  downloads=[], projects=['hawc'])
 
     pubs = await get_pubs(url, params={'projects': 'hawc', 'hide_projects': True})
     assert len(pubs) == 1
@@ -142,15 +128,15 @@ async def test_dates(server):
 
     await add_pub(db, title='Test Title1', authors=['auth'],
                   pub_type="journal", citation="TestJournal", date='2020-01-02',
-                  links=[], projects=['icecube'])
+                  downloads=[], projects=['icecube'])
 
     await add_pub(db, title='Test Title2', authors=['auth'],
                   pub_type="journal", citation="TestJournal", date='2020-02-03',
-                  links=[], projects=['icecube'])
+                  downloads=[], projects=['icecube'])
 
     await add_pub(db, title='Test Title3', authors=['auth'],
                   pub_type="journal", citation="TestJournal", date='2020-03-04',
-                  links=[], projects=['icecube'])
+                  downloads=[], projects=['icecube'])
 
     pubs = await get_pubs(url, params={'start_date': '2020-02-02'})
     assert len(pubs) == 2
@@ -178,15 +164,15 @@ async def test_types(server):
 
     await add_pub(db, title='Test Title1', authors=['auth'],
                   pub_type="journal", citation="TestJournal", date=nowstr(),
-                  links=[], projects=['icecube'])
+                  downloads=[], projects=['icecube'])
 
     await add_pub(db, title='Test Title2', authors=['auth'],
                   pub_type="proceeding", citation="TestJournal", date=nowstr(),
-                  links=[], projects=['icecube'])
+                  downloads=[], projects=['icecube'])
 
     await add_pub(db, title='Test Title3', authors=['auth'],
                   pub_type="thesis", citation="TestJournal", date=nowstr(),
-                  links=[], projects=['icecube'])
+                  downloads=[], projects=['icecube'])
 
     pubs = await get_pubs(url, params={'type': 'journal'})
     assert len(pubs) == 1
@@ -211,15 +197,15 @@ async def test_title(server):
 
     await add_pub(db, title='Test Title1', authors=['auth'],
                   pub_type="journal", citation="TestJournal", date=nowstr(),
-                  links=[], projects=['icecube'])
+                  downloads=[], projects=['icecube'])
 
     await add_pub(db, title='Test Title2', authors=['auth'],
                   pub_type="proceeding", citation="TestJournal", date=nowstr(),
-                  links=[], projects=['icecube'])
+                  downloads=[], projects=['icecube'])
 
     await add_pub(db, title='Test Title3', authors=['auth'],
                   pub_type="thesis", citation="TestJournal", date=nowstr(),
-                  links=[], projects=['icecube'])
+                  downloads=[], projects=['icecube'])
 
     pubs = await get_pubs(url, params={'title': 'title1'})
     assert len(pubs) == 1
@@ -231,15 +217,15 @@ async def test_authors(server):
 
     await add_pub(db, title='Test Title1', authors=['auth1'],
                   pub_type="journal", citation="TestJournal", date=nowstr(),
-                  links=[], projects=['icecube'])
+                  downloads=[], projects=['icecube'])
 
     await add_pub(db, title='Test Title2', authors=['auth2'],
                   pub_type="proceeding", citation="TestJournal", date=nowstr(),
-                  links=[], projects=['icecube'])
+                  downloads=[], projects=['icecube'])
 
     await add_pub(db, title='Test Title3', authors=['auth1', 'auth3'],
                   pub_type="thesis", citation="TestJournal", date=nowstr(),
-                  links=[], projects=['icecube'])
+                  downloads=[], projects=['icecube'])
 
     pubs = await get_pubs(url, params={'authors': 'auth1'})
     assert len(pubs) == 2

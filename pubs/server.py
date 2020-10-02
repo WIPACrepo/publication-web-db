@@ -18,7 +18,7 @@ from bson.objectid import ObjectId
 
 from . import __version__ as version
 from . import PUBLICATION_TYPES, PROJECTS
-from .utils import create_indexes
+from .utils import create_indexes, date_format, add_pub
 
 logger = logging.getLogger('server')
 
@@ -41,16 +41,6 @@ def get_domain(link):
     if (not link.startswith('http')) and not link.startswith('//'):
         link = f'//{link}'
     return urlparse(link).netloc
-
-def date_format(datestring):
-    if 'T' in datestring:
-        if '.' in datestring:
-            date = datetime.strptime(datestring, "%Y-%m-%dT%H:%M:%S.%f")
-        else:
-            date = datetime.strptime(datestring, "%Y-%m-%dT%H:%M:%S")
-    else:
-        date = datetime.strptime(datestring, "%Y-%m-%d")
-    return date.strftime("%d %B %Y")
 
 class BaseHandler(RequestHandler):
     def initialize(self, db=None, basic_auth=None, debug=False, **kwargs):
@@ -191,7 +181,7 @@ class New(BaseHandler):
                 'downloads': [d.strip() for d in self.get_argument('downloads').split('\n') if d.strip()],
                 'projects': self.get_arguments('projects'),
             }
-            await self.db.publications.insert_one(doc)
+            await add_pub(db=self.db, **doc)
 
             self.redirect('/manage')
         except Exception as e:
