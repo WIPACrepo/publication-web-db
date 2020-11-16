@@ -17,4 +17,4 @@ jobs:
         USER: ${{ secrets.DOCS_USERNAME }}
         PASS: ${{ secrets.DOCS_PASSWORD }}
       run: |
-        curl -XDELETE "https://$USER:$PASS@docs.icecube.aq/api/upload?path=$GITHUB_REPOSITORY/$GITHUB_REF"
+        curl -XDELETE "https://$USER:$PASS@docs.icecube.aq/api/upload?path=$GITHUB_REPOSITORY/${{ github.event.ref }}"
