@@ -17,10 +17,16 @@ PUBLICATION_TYPES = {
 
 PROJECTS = {
     'icecube': 'IceCube',
+    'wipac': 'WIPAC',
     'ara': 'ARA',
     'bigdata': 'BigData',
     'cta': 'CTA',
-    'dmice': 'DM-Ice',
+    'dm-ice': 'DM-Ice',
     'hawc': 'HAWC',
-    'other': 'Other',
+}
+
+SITES = {
+    'icecube': 'IceCube',
+    'ara': 'ARA',
+    'wipac': 'WIPAC',
 }

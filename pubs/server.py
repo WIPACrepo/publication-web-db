@@ -7,7 +7,6 @@ import logging
 import binascii
 from functools import wraps
 from urllib.parse import urlparse
-from datetime import datetime
 import base64
 
 from tornado.web import RequestHandler, HTTPError
@@ -17,8 +16,8 @@ import motor.motor_asyncio
 from bson.objectid import ObjectId
 
 from . import __version__ as version
-from . import PUBLICATION_TYPES, PROJECTS
-from .utils import create_indexes
+from . import PUBLICATION_TYPES, PROJECTS, SITES
+from .utils import create_indexes, date_format, add_pub
 
 logger = logging.getLogger('server')
 
@@ -42,16 +41,6 @@ def get_domain(link):
         link = f'//{link}'
     return urlparse(link).netloc
 
-def date_format(datestring):
-    if 'T' in datestring:
-        if '.' in datestring:
-            date = datetime.strptime(datestring, "%Y-%m-%dT%H:%M:%S.%f")
-        else:
-            date = datetime.strptime(datestring, "%Y-%m-%dT%H:%M:%S")
-    else:
-        date = datetime.strptime(datestring, "%Y-%m-%d")
-    return date.strftime("%d %B %Y")
-
 class BaseHandler(RequestHandler):
     def initialize(self, db=None, basic_auth=None, debug=False, **kwargs):
         super().initialize(**kwargs)
@@ -70,6 +59,7 @@ class BaseHandler(RequestHandler):
         namespace['title'] = ''
         namespace['PUBLICATION_TYPES'] = PUBLICATION_TYPES
         namespace['PROJECTS'] = PROJECTS
+        namespace['SITES'] = SITES
         namespace['error'] = None
         namespace['edit'] = False
         return namespace
@@ -95,6 +85,9 @@ class BaseHandler(RequestHandler):
 
         if projects := self.get_arguments('projects'):
             match['projects'] = {"$in": projects}
+
+        if sites := self.get_arguments('sites'):
+            match['sites'] = {"$in": sites}
 
         start = self.get_argument('start_date', '')
         end = self.get_argument('end_date', '')
@@ -128,6 +121,7 @@ class BaseHandler(RequestHandler):
         return {
             "publications": pubs,
             "projects": projects,
+            "sites": sites,
             "start_date": start,
             "end_date": end,
             "type": types,
@@ -190,8 +184,9 @@ class New(BaseHandler):
                 'citation': self.get_argument('citation').strip(),
                 'downloads': [d.strip() for d in self.get_argument('downloads').split('\n') if d.strip()],
                 'projects': self.get_arguments('projects'),
+                'sites': self.get_arguments('sites'),
             }
-            await self.db.publications.insert_one(doc)
+            await add_pub(db=self.db, **doc)
 
             self.redirect('/manage')
         except Exception as e:

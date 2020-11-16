@@ -3,9 +3,20 @@ import logging
 
 import pymongo
 
+from . import PUBLICATION_TYPES, PROJECTS, SITES
 
 def nowstr():
     return datetime.utcnow().isoformat()
+
+def date_format(datestring):
+    if 'T' in datestring:
+        if '.' in datestring:
+            date = datetime.strptime(datestring, "%Y-%m-%dT%H:%M:%S.%f")
+        else:
+            date = datetime.strptime(datestring, "%Y-%m-%dT%H:%M:%S")
+    else:
+        date = datetime.strptime(datestring, "%Y-%m-%d")
+    return date.strftime("%d %B %Y")
 
 def create_indexes(db_url, db_name, background=True):
     db = pymongo.MongoClient(db_url)[db_name]
@@ -21,3 +32,35 @@ def create_indexes(db_url, db_name, background=True):
         db.publications.create_index([('title', pymongo.TEXT), ('authors', pymongo.TEXT), ('citation', pymongo.TEXT)],
                                      weights={'title': 10, 'authors': 5, 'citation': 1},
                                      name='text_index', background=background)
+
+
+async def add_pub(db, title, authors, pub_type, citation, date, downloads, projects, sites=None):
+    assert isinstance(title, str)
+    assert isinstance(authors, list)
+    for a in authors:
+        assert isinstance(a, str)
+    assert pub_type in PUBLICATION_TYPES
+    assert isinstance(citation, str)
+    assert isinstance(date, str)
+    date_format(date)
+    assert isinstance(downloads, list)
+    for d in downloads:
+        assert isinstance(d, str)
+    assert isinstance(projects, list)
+    for p in projects:
+        assert p in PROJECTS
+    if not sites:
+        sites = []
+    for s in sites:
+        assert s in SITES
+    data = {
+        "title": title,
+        "authors": authors,
+        "type": pub_type,
+        "citation": citation,
+        "date": date,
+        "downloads": downloads,
+        "projects": projects,
+        "sites": sites,
+    }
+    await db.publications.insert_one(data)
