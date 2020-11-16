@@ -16,7 +16,7 @@ import motor.motor_asyncio
 from bson.objectid import ObjectId
 
 from . import __version__ as version
-from . import PUBLICATION_TYPES, PROJECTS
+from . import PUBLICATION_TYPES, PROJECTS, SITES
 from .utils import create_indexes, date_format, add_pub
 
 logger = logging.getLogger('server')
@@ -59,6 +59,7 @@ class BaseHandler(RequestHandler):
         namespace['title'] = ''
         namespace['PUBLICATION_TYPES'] = PUBLICATION_TYPES
         namespace['PROJECTS'] = PROJECTS
+        namespace['SITES'] = SITES
         namespace['error'] = None
         namespace['edit'] = False
         return namespace
@@ -84,6 +85,9 @@ class BaseHandler(RequestHandler):
 
         if projects := self.get_arguments('projects'):
             match['projects'] = {"$in": projects}
+
+        if sites := self.get_arguments('sites'):
+            match['sites'] = {"$in": sites}
 
         start = self.get_argument('start_date', '')
         end = self.get_argument('end_date', '')
@@ -117,6 +121,7 @@ class BaseHandler(RequestHandler):
         return {
             "publications": pubs,
             "projects": projects,
+            "sites": sites,
             "start_date": start,
             "end_date": end,
             "type": types,
@@ -179,6 +184,7 @@ class New(BaseHandler):
                 'citation': self.get_argument('citation').strip(),
                 'downloads': [d.strip() for d in self.get_argument('downloads').split('\n') if d.strip()],
                 'projects': self.get_arguments('projects'),
+                'sites': self.get_arguments('sites'),
             }
             await add_pub(db=self.db, **doc)
 

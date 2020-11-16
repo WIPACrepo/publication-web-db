@@ -23,5 +23,10 @@ PROJECTS = {
     'cta': 'CTA',
     'dm-ice': 'DM-Ice',
     'hawc': 'HAWC',
-    'other': 'Other',
+}
+
+SITES = {
+    'icecube': 'IceCube',
+    'ara': 'ARA',
+    'wipac': 'WIPAC',
 }

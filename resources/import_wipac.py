@@ -61,17 +61,6 @@ where node.type = 'publication'
 
         for row in data:
             title = row['title'].strip()
-            ret = await db.publications.find_one({'title': title})
-            if ret:
-                logging.info(f'skipping {title}')
-                continue
-            logging.info(f'processing {title}')
-
-            cursor.execute(sql_downloads, (row['nid'],))
-            row['downloads'] = [r['url'] for r in cursor.fetchall()]
-            cursor.execute(sql_projects, (row['nid'],))
-            row['projects'] = [r['project'] for r in cursor.fetchall()]
-
             authors = [row['authors'].strip()]
             type = row['pubtype'].strip().lower()
             if type == 'theses':
@@ -81,21 +70,68 @@ where node.type = 'publication'
             elif type == 'journal article':
                 type = 'journal'
             citation = row['citation'].strip()
+            date = row['date'].isoformat()
+
+            # improved date finding
+            for part in reversed(citation.split(',')):
+                try:
+                    part = part.split(';',1)[0].split('-',1)[-1].strip()
+                    date = datetime.strptime(part, "%d %B %Y").isoformat()
+                    break
+                except Exception:
+                    continue
+
+            cursor.execute(sql_downloads, (row['nid'],))
+            row['downloads'] = [r['url'] for r in cursor.fetchall()]
+            cursor.execute(sql_projects, (row['nid'],))
+            row['projects'] = [r['project'] for r in cursor.fetchall()]
+
+            ret = await db.publications.find({'title': title, 'type': type, 'authors': authors}).to_list(1000)
+            if ret:
+                if (title, type, authors) in [
+                        ('High Energy Neutrino Astronomy: The Experimental Road', 'proceeding', ['Christian Spiering']),
+                        ('Search for Neutralino Dark Matter with the AMANDA Neutrino Telescope and Prospects for IceCube', 'proceeding', ['A. Rizzo for the IceCube Collaboration']),
+                        ('IceCube Science', 'proceeding', ['Francis Halzen']),
+                        ('IceCube', 'proceeding', ['Albrecht Karle for the IceCube Collaboration']),
+                        ('IceCube and the Discovery of High-Energy Cosmic Neutrinos', 'proceeding', ['Francis Halzen']),
+                    ] and citation not in [r['citation'] for r in ret]:
+                    logging.info(f'non-dup already entered: {ret}')
+                elif (title, type, authors) in [ # skip list to remove dups
+                        ('The IceCube Neutrino Telescope', 'proceeding', ['IceCube Collaboration: J. Ahrens et al']),
+                        ('Neutrino Astronomy at the South Pole', 'proceeding', ['IceCube Collaboration: A. Achterberg et al']),
+                        ('Searches for Annihilating Dark Matter in the Milky Way Halo with IceCube', 'proceeding', ['Samuel Flis and Morten Medici for the IceCube Collaboration']),
+                        ('The IceCube Neutrino Observatory - Contributions to the 36th International Cosmic Ray Conference (ICRC2019)', 'proceeding', ['IceCube Collaboration: M. G. Aartsen et al']),
+                    ]:
+                    logging.info(f'skipping {row}')
+                    logging.info(f'  already entered: {ret}')
+                    continue
+                else:
+                    logging.info(f'bad entry {row}')
+                    logging.info(f'  already entered: {ret}')
+                    break
+            logging.info(f'processing {title}')
+
             download = row['downloads']
-            try:
-                c, d = citation.rsplit(',', 1)
-                d = d.strip()
-                if '-' in d:
-                    d = d.split('-')[0]+' '+d.split(' ',1)[-1]
-                date = datetime.strptime(d.strip(), "%d %B %Y").isoformat()
-                citation = c.strip()
-            except ValueError:
-                date = row['date'].isoformat()
-            except Exception:
-                raise
             projects = [p.lower() for p in row['projects']]
-            if projects == ['none']:
-                projects = ['other']
+            sites = []
+            if projects == ['none']: # special case: this is Kael's pub
+                print('NONE',title,type,authors,citation)
+                projects = []
+                sites = []
+            elif 'icecube' in projects and 'wipac' in projects: # special case
+                projects = ['icecube']
+                sites = ['wipac']
+            else:
+                if projects: # any + other -> site=WIPAC
+                    sites.append('wipac')
+                if 'icecube' in projects:
+                    sites.append('icecube')
+                if 'other' in projects: # other is not a real project
+                    projects = [x for x in projects if x != 'other']
+                if 'wipac' in projects: # wipac is not a project
+                    projects = [x for x in projects if x != 'wipac']
+                if 'ara' in projects:
+                    sites.append('ara')
 
             doc = {
                 'title': title,
@@ -105,6 +141,7 @@ where node.type = 'publication'
                 'date': date,
                 'downloads': download,
                 'projects': projects,
+                'sites': sites,
             }
 
             try:

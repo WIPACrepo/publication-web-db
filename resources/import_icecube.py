@@ -40,11 +40,6 @@ async def main():
             continue
         _, title, authors, type, citation, download, year, month = line.split('\t')
         title = title.strip(' "\'')
-        ret = await db.publications.find_one({'title': title})
-        if ret:
-            logging.info(f'skipping {title}')
-            continue
-        logging.info(f'processing {title}')
 
         authors = [authors.strip(' "\'')]
         type = type.strip(' "\'')
@@ -55,18 +50,43 @@ async def main():
         citation = citation.strip(' "\'')
         download = download.strip(' "\'').split('|')
         try:
-            c, d = citation.rsplit(',', 1)
-            d = d.strip()
-            if '-' in d:
-                d = d.split('-')[0]+' '+d.split(' ',1)[-1]
-            date = datetime.strptime(d.strip(), "%d %B %Y").isoformat()
-            citation = c.strip()
-        except ValueError:
-            if month == 'NULL':
-                month = '1'
             date = datetime(year=int(year), month=int(month), day=1).isoformat()
-        except Exception:
-            raise
+        except ValueError:
+            date = datetime.now().isoformat()
+
+        # improved date finding
+        for part in reversed(citation.split(',')):
+            try:
+                part = part.split(';',1)[0].split('-',1)[-1].strip()
+                date = datetime.strptime(part, "%d %B %Y").isoformat()
+                break
+            except Exception:
+                continue
+
+        ret = await db.publications.find({'title': title, 'type': type, 'authors': authors}).to_list(1000)
+        if ret:
+            if (title, type, authors) in [
+                    ('High Energy Neutrino Astronomy: The Experimental Road', 'proceeding', ['Christian Spiering']),
+                    ('Search for Neutralino Dark Matter with the AMANDA Neutrino Telescope and Prospects for IceCube', 'proceeding', ['A. Rizzo for the IceCube Collaboration']),
+                    ('IceCube Science', 'proceeding', ['Francis Halzen']),
+                    ('IceCube', 'proceeding', ['Albrecht Karle for the IceCube Collaboration']),
+                    ('IceCube and the Discovery of High-Energy Cosmic Neutrinos', 'proceeding', ['Francis Halzen']),
+                ] and citation not in [r['citation'] for r in ret]:
+                logging.info(f'non-dup already entered: {ret}')
+            elif (title, type, authors) in [ # skip list to remove dups
+                    ('The IceCube Neutrino Telescope', 'proceeding', ['IceCube Collaboration: J. Ahrens et al']),
+                    ('Neutrino Astronomy at the South Pole', 'proceeding', ['IceCube Collaboration: A. Achterberg et al']),
+                    ('Searches for Annihilating Dark Matter in the Milky Way Halo with IceCube', 'proceeding', ['Samuel Flis and Morten Medici for the IceCube Collaboration']),
+                    ('The IceCube Neutrino Observatory - Contributions to the 36th International Cosmic Ray Conference (ICRC2019)', 'proceeding', ['IceCube Collaboration: M. G. Aartsen et al']),
+                ]:
+                logging.info(f'skipping {line}')
+                logging.info(f'  already entered: {ret}')
+                continue
+            else:
+                logging.info(f'bad entry {line}')
+                logging.info(f'  already entered: {ret}')
+                continue
+        logging.info(f'processing {title}')
 
         doc = {
             'title': title,
@@ -76,6 +96,7 @@ async def main():
             'date': date,
             'downloads': download,
             'projects': ['icecube'],
+            'sites': ['icecube','wipac'],
         }
 
         try:

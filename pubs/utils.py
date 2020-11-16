@@ -3,7 +3,7 @@ import logging
 
 import pymongo
 
-from . import PUBLICATION_TYPES, PROJECTS
+from . import PUBLICATION_TYPES, PROJECTS, SITES
 
 def nowstr():
     return datetime.utcnow().isoformat()
@@ -34,7 +34,7 @@ def create_indexes(db_url, db_name, background=True):
                                      name='text_index', background=background)
 
 
-async def add_pub(db, title, authors, pub_type, citation, date, downloads, projects):
+async def add_pub(db, title, authors, pub_type, citation, date, downloads, projects, sites=None):
     assert isinstance(title, str)
     assert isinstance(authors, list)
     for a in authors:
@@ -49,6 +49,10 @@ async def add_pub(db, title, authors, pub_type, citation, date, downloads, proje
     assert isinstance(projects, list)
     for p in projects:
         assert p in PROJECTS
+    if not sites:
+        sites = []
+    for s in sites:
+        assert s in SITES
     data = {
         "title": title,
         "authors": authors,
@@ -57,5 +61,6 @@ async def add_pub(db, title, authors, pub_type, citation, date, downloads, proje
         "date": date,
         "downloads": downloads,
         "projects": projects,
+        "sites": sites,
     }
     await db.publications.insert_one(data)

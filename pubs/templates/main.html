@@ -73,6 +73,7 @@
       {% if end_date %}<input type="hidden" name="end_date" value="{{ end_date }}" />{% end %}
       {% for t in type %}<input type="hidden" name="type" value="{{ t }}" />{% end %}
       {% for p in projects %}<input type="hidden" name="projects" value="{{ p }}" />{% end %}
+      {% for s in sites %}<input type="hidden" name="sites" value="{{ s }}" />{% end %}
       <input type="hidden" name="pub_id" value="{{ pub['_id'] }}" />
       <input type="hidden" name="action" value="delete" />
       <input type="submit" value="Delete" />
