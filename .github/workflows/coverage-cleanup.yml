@@ -5,8 +5,6 @@ name: Coverage cleanup
 on:
   delete:
     branches: [ $default-branch ]
-  pull_request:
-    types: [closed]
 
 jobs:
   cleanup:
