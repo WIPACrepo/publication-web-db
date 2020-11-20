@@ -8,9 +8,9 @@
   <a href="/new">Create a new publication here</a>
 </div>
 {% end %}
-<div class="lookup">
+<div class="publication_filters">
   {% if edit %}<h2>Lookup</h2>{% end %}
-  <form action="{{ request.path }}" method="get">
+  <form action="{{ request.path }}" method="get" autocomplete="off">
     <div class="input vcenter search"><label for="search">Text search: </label><input type="text" name="search" value="{{ search }}" /></div>
     <div class="col">
       <div class="input vcenter"><label for="start_date">Start date: </label><input type="date" name="start_date" value="{{ start_date }}" /></div>
@@ -45,9 +45,7 @@
 <article class="publication">
   <div><span class="title">{{ pub['title'] }}</span></div>
   <div><span class="authors">
-    {% for author in pub['authors'] %}
-    <span class="author">{{ author }}</span>
-    {% end %}
+    {% for author in pub['authors'] %}<span class="author">{{ author }}</span>{% end %}
   </span></div>
   <div><span class="type">({{ PUBLICATION_TYPES[pub['type']] }})</span>
   <span class="citation">{{ pub['citation'] }}</span>
@@ -55,9 +53,7 @@
   <div>
     {% if pub['downloads'] %}
     <span class="downloads">Download:
-      {% for link in pub['downloads'] %}
-      <span class="download"><a href="{{ link }}" target="_blank">{{ domain(link) }}</a></span>
-      {% end %}
+      {% for link in pub['downloads'] %}<span class="download"><a href="{{ link }}" target="_blank">{{ domain(link) }}</a></span>{% end %}
     </span>
     {% end %}
     {% if pub['projects'] and not hide_projects %}

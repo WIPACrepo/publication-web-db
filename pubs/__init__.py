@@ -17,7 +17,6 @@ PUBLICATION_TYPES = {
 
 PROJECTS = {
     'icecube': 'IceCube',
-    'wipac': 'WIPAC',
     'ara': 'ARA',
     'bigdata': 'BigData',
     'cta': 'CTA',

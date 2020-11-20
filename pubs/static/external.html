@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>External Pubs</title>
+</head>
+<body>
+    <div id="publications"></div>
+    <script src="http://localhost:8080/static/external.js"></script>
+    <script>
+    const filters = {}//{'site': 'icecube', 'projects': 'icecube', 'hide_projects': true};
+    Pubs('#publications', 'http://localhost:8080', filters);
+    </script>
+</body>
+</html>
