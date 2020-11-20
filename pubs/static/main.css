@@ -116,44 +116,8 @@ div.error_box {
     border-radius: .2em;
 }
 
-
-article.publication {
-    margin: 1em 0 2em;
-}
-
-.publication_filters form {
-    display: flex;
-    flex-wrap: wrap;
-}
-.publication_filters div.col {
-    margin-right: 4rem;
-}
-.publication_filters div.input {
-    display: flex;
-    align-items: start;
-    flex-wrap: wrap;
-    margin: .6rem .5rem;
-}
-.publication_filters input:disabled {
-    background: #aaa;
-}
-.publication_filters div.input.vcenter {
-    align-items: center;
-}
-.publication_filters div.input>label {
-    vertical-align: top;
-    padding-right: 1rem;
-}
-.publication_filters .type_box {
-    display: inline-block;
-}
-.publication_filters div.search, .publication_filters div.submit {
-    width: 100%;
-    align-items: center;
-}
-div.search input {
-    width: 100%;
-    max-width: 40rem;
+.new form {
+    line-height: 1.2rem;
 }
 
 .new div.input {
@@ -173,32 +137,4 @@ div.search input {
 .new select {
     min-width: 15.5rem;
 }
-
-form, .publication {
-    line-height: 1.2rem;
-}
-.publication .title {
-    font-style: italic;
-}
-.publication .authors {
-    font-weight: bold;
-}
-.publication .authors .author:not(:first-child)::before {
-    content: "and";
-    padding: 0 .4rem;
-}
-.publication .downloads .download:not(:first-child)::before {
-    content: "|";
-    padding: 0 .4rem;
-}
-.publication .downloads {
-    margin-right: 1rem;
-}
-.publication .projects .project:not(:first-child)::before {
-    content: ", ";
-}
-.publication form.edit {
-    margin: .2rem 0;
-}
-
 

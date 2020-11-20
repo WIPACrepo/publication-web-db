@@ -16,7 +16,7 @@ var loadDeps = async function(baseurl){
     ]
     const s = document.createElement('link');
     s.rel = 'stylesheet';
-    s.href = baseurl+'/static/main.css';
+    s.href = baseurl+'/static/external.css';
     document.head.appendChild(s);
     await Promise.all(scripts);
 };
