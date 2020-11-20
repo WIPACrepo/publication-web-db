@@ -91,14 +91,12 @@ async def test_multi_project(server):
 
     await add_pub(db, title='Test Title3', authors=['auth'],
                   pub_type="journal", citation="TestJournal", date=nowstr(),
-                  downloads=[], projects=['ara'])
+                  downloads=[], projects=['icecube','hawc'])
 
     pubs = await get_pubs(url, params={'projects': ['hawc', 'icecube']})
-    assert len(pubs) == 2
-    assert pubs[0].select('.title')[0].string == 'Test Title2'
-    assert pubs[0].select('.project')[0].string == 'HAWC'
-    assert pubs[1].select('.title')[0].string == 'Test Title'
-    assert pubs[1].select('.project')[0].string == 'IceCube'
+    assert len(pubs) == 1
+    assert pubs[0].select('.title')[0].string == 'Test Title3'
+    assert set(x.string for x in pubs[0].select('.project')) == set(['HAWC', 'IceCube'])
 
 @pytest.mark.asyncio
 async def test_hide_projects(server):
