@@ -25,6 +25,13 @@ default_config = {
 }
 config = from_environment(default_config)
 
+def cleanURL(url):
+    url = url.strip()
+    if 'http:// ' in url:
+        url = 'http://'+url.replace('http:// ','').strip()
+    if 'http :// ' in url:
+        url = 'https://'+url.replace('http ://','').strip()
+    return url
 
 async def main():
     logging.info(f'DB: {config["DB_URL"]}')
@@ -82,7 +89,7 @@ where node.type = 'publication'
                     continue
 
             cursor.execute(sql_downloads, (row['nid'],))
-            row['downloads'] = [r['url'] for r in cursor.fetchall()]
+            row['downloads'] = [cleanURL(r['url']) for r in cursor.fetchall()]
             cursor.execute(sql_projects, (row['nid'],))
             row['projects'] = [r['project'] for r in cursor.fetchall()]
 

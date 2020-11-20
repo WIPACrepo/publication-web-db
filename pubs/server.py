@@ -10,8 +10,7 @@ from urllib.parse import urlparse
 import base64
 
 from tornado.web import RequestHandler, HTTPError
-from rest_tools.server import RestServer, from_environment
-# from rest_tools.server import catch_error, authenticated
+from rest_tools.server import RestServer, from_environment, catch_error
 import motor.motor_asyncio
 from bson.objectid import ObjectId
 
@@ -84,10 +83,10 @@ class BaseHandler(RequestHandler):
         match = {}
 
         if projects := self.get_arguments('projects'):
-            match['projects'] = {"$in": projects}
+            match['projects'] = {"$all": projects}
 
         if sites := self.get_arguments('sites'):
-            match['sites'] = {"$in": sites}
+            match['sites'] = {"$all": sites}
 
         start = self.get_argument('start_date', '')
         end = self.get_argument('end_date', '')
@@ -105,7 +104,7 @@ class BaseHandler(RequestHandler):
             match['$text'] = {"$search": search}
 
         if authors := self.get_arguments('authors'):
-            match['authors'] = {"$in": authors}
+            match['authors'] = {"$all": authors}
 
         kwargs = {}
         if not mongoid:
@@ -151,11 +150,13 @@ class Main(BaseHandler):
         self.render('main.html', **pubs, hide_projects=hide_projects)
 
 class Manage(BaseHandler):
+    @catch_error
     @basic_auth
     async def get(self):
         pubs = await self.get_pubs(mongoid=True)
         self.render('main.html', edit=True, **pubs, hide_projects=False)
 
+    @catch_error
     @basic_auth
     async def post(self):
         if action := self.get_argument('action', None):
@@ -168,11 +169,13 @@ class Manage(BaseHandler):
         self.render('main.html', edit=True, **pubs, hide_projects=False)
 
 class New(BaseHandler):
+    @catch_error
     @basic_auth
     async def get(self):
         existing_authors = await self.get_authors()
         self.render('new.html', existing_authors=existing_authors)
 
+    @catch_error
     @basic_auth
     async def post(self):
         try:
@@ -191,6 +194,46 @@ class New(BaseHandler):
             self.redirect('/manage')
         except Exception as e:
             self.render('new.html', error=e)
+
+class APIBaseHandler(BaseHandler):
+    def write_error(self, status_code=500, **kwargs):
+        """Write out custom error json."""
+        data = {
+            'code': status_code,
+            'error': self._reason,
+        }
+        self.write(data)
+        self.finish()
+
+class APIPubs(APIBaseHandler):
+    @catch_error
+    async def get(self):
+        pubs = await self.get_pubs()
+        self.write(pubs)
+
+class APIFilterDefaults(APIBaseHandler):
+    @catch_error
+    async def get(self):
+        self.write({
+            'projects': [],
+            'sites': [],
+            'start_date': '',
+            'end_date': '',
+            'type': [],
+            'search': '',
+            'authors': [],
+            'hide_projects': False,
+        })
+
+class APITypes(APIBaseHandler):
+    @catch_error
+    async def get(self):
+        self.write(PUBLICATION_TYPES)
+
+class APIProjects(APIBaseHandler):
+    @catch_error
+    async def get(self):
+        self.write(PROJECTS)
 
 def create_server():
     static_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
@@ -228,6 +271,10 @@ def create_server():
     server.add_route(r'/', Main, main_args)
     server.add_route(r'/manage', Manage, main_args)
     server.add_route(r'/new', New, main_args)
+    server.add_route(r'/api/publications', APIPubs, main_args)
+    server.add_route(r'/api/filter_defaults', APIFilterDefaults, main_args)
+    server.add_route(r'/api/types', APITypes, main_args)
+    server.add_route(r'/api/projects', APIProjects, main_args)
 
     server.startup(address=config['HOST'], port=config['PORT'])
 
