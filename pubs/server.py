@@ -12,6 +12,7 @@ import base64
 from tornado.web import RequestHandler, HTTPError
 from rest_tools.server import RestServer, from_environment, catch_error
 import motor.motor_asyncio
+import pymongo
 from bson.objectid import ObjectId
 
 from . import __version__ as version
@@ -79,7 +80,7 @@ class BaseHandler(RequestHandler):
             logger.info('failed auth', exc_info=True)
         return None
 
-    async def get_pubs(self, mongoid=False):
+    def args_to_match_query(self):
         match = {}
 
         if projects := self.get_arguments('projects'):
@@ -106,27 +107,46 @@ class BaseHandler(RequestHandler):
         if authors := self.get_arguments('authors'):
             match['authors'] = {"$all": authors}
 
+        return match, {
+            'projects': projects,
+            'sites': sites,
+            'start_date': start,
+            'end_date': end,
+            'type': types,
+            'search': search,
+            'authors': authors,
+        }
+
+    async def count_pubs(self):
+        match, _ = self.args_to_match_query()
+        return await self.db.publications.count_documents(match)
+
+    async def get_pubs(self, mongoid=False):
+        match, args = self.args_to_match_query()
+
         kwargs = {}
         if not mongoid:
             kwargs['projection'] = {'_id': False}
 
+        if page := self.get_argument('page', None):
+            page = int(page)
+        if limit := self.get_argument('limit', None):
+            limit = int(limit)
+
         pubs = []
-        async for row in self.db.publications.find(match, **kwargs):
+        i = -1
+        async for row in self.db.publications.find(match, **kwargs).sort('date', pymongo.DESCENDING):
+            i += 1
             if mongoid:
                 row['_id'] = str(row['_id'])
+            if page is not None and limit and i < page*limit:
+                continue
             pubs.append(row)
-        pubs.sort(key=lambda pub: pub['date'], reverse=True)
+            if page is not None and limit and len(pubs) >= limit:
+                break
 
-        return {
-            "publications": pubs,
-            "projects": projects,
-            "sites": sites,
-            "start_date": start,
-            "end_date": end,
-            "type": types,
-            "search": search,
-            "authors": authors,
-        }
+        args['publications'] = pubs
+        return args
 
     async def get_authors(self):
         aggregation = [
@@ -211,6 +231,12 @@ class APIPubs(APIBaseHandler):
         pubs = await self.get_pubs()
         self.write(pubs)
 
+class APIPubsCount(APIBaseHandler):
+    @catch_error
+    async def get(self):
+        pubs = await self.count_pubs()
+        self.write({"count": pubs})
+
 class APIFilterDefaults(APIBaseHandler):
     @catch_error
     async def get(self):
@@ -272,6 +298,7 @@ def create_server():
     server.add_route(r'/manage', Manage, main_args)
     server.add_route(r'/new', New, main_args)
     server.add_route(r'/api/publications', APIPubs, main_args)
+    server.add_route(r'/api/publications/count', APIPubsCount, main_args)
     server.add_route(r'/api/filter_defaults', APIFilterDefaults, main_args)
     server.add_route(r'/api/types', APITypes, main_args)
     server.add_route(r'/api/projects', APIProjects, main_args)

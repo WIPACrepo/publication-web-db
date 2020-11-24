@@ -44,12 +44,40 @@ const pub_html = `
 </form></div>
 <div class="publication_list">
   <h2>Publications</h2>
-  <div v-if="typing">{{ typing }}</div>
-  <div v-else>
-    <pub v-for="pub in pubs" v-bind="pub" :project_labels="projects"></pub>
+  <div>
+    <div class="publication_count">Search returned {{ count }} results</div>
+    <div v-if="page > 1 || count >= limit" class="pagination">
+      <div class="set_limit"><label for="set_limit">Publications per Page: <input type="text" id="set_limit" v-model.number="limit" /></div>
+      <a v-for="p in page_links" @click="setPage(p)" :aria-label="'Page '+p" :class="{current: p == page, numeric: !isNaN(p)}">{{ p }}</a>
+    </div>
+    <hr>
+    <div v-if="typing">{{ typing }}</div>
+    <div v-else>
+      <pub v-for="pub in pubs" v-bind="pub" :project_labels="projects"></pub>
+      <hr>
+      <div v-if="page > 1 || count >= limit" class="pagination">
+        <a v-for="p in page_links" @click="setPage(p)" :aria-label="'Page '+p" :class="{current: p == page, numeric: !isNaN(p)}">{{ p }}</a>
+      </div>
+    </div>
   </div>
 </div>
 `;
+
+let URLSerializer = function(p){
+  let ret = [];
+  for(const k in p){
+    let v = p[k]
+    if (v === null || typeof v === undefined)
+      continue
+    if (!Array.isArray(v)) {
+      v = [v]
+    }
+    for(const vv of v){
+      ret.push(encodeURIComponent(k)+'='+encodeURIComponent(vv))
+    }
+  }
+  return ret.join('&')
+};
 
 async function Pubs(id, baseurl = 'https://publications.icecube.aq', filters = {}) {
   await loadDeps(baseurl);
@@ -59,27 +87,21 @@ async function Pubs(id, baseurl = 'https://publications.icecube.aq', filters = {
     console.log(filters)
     const response = await axios.get(baseurl+'/api/publications', {
       params: filters,
-      paramsSerializer: function(p){
-        let ret = [];
-        for(const k in p){
-          let v = p[k]
-          if (v === null || typeof v === undefined)
-            continue
-          if (!Array.isArray(v)) {
-            v = [v]
-          }
-          for(const vv of v){
-            ret.push(encodeURIComponent(k)+'='+encodeURIComponent(vv))
-          }
-        }
-        return ret.join('&')
-      }
+      paramsSerializer: URLSerializer
     });
     console.log('pubs resp:')
     console.log(response.data)
     return response.data['publications'];
   };
-  
+
+  var updatePubsCount = async function(filters) {
+    const response = await axios.get(baseurl+'/api/publications/count', {
+      params: filters,
+      paramsSerializer: URLSerializer
+    });
+    return response.data['count'];
+  };
+
   // get data from server in parallel
   let filter_defaults_fut = axios.get(baseurl+'/api/filter_defaults');
   let publication_types_fut = (async function(){
@@ -94,6 +116,11 @@ async function Pubs(id, baseurl = 'https://publications.icecube.aq', filters = {
     console.log(response.data)
     return response.data;
   })();
+  let pubs_count_fut = updatePubsCount(filters);
+  let pubs_filters = Object.assign({}, filters);
+  pubs_filters['page'] = 0
+  pubs_filters['limit'] = 20
+  let pubs_fut = updatePubs(pubs_filters);
 
   // merge default filters
   const response = await filter_defaults_fut;
@@ -101,11 +128,10 @@ async function Pubs(id, baseurl = 'https://publications.icecube.aq', filters = {
   Object.assign(filters_with_defaults, filters);
 
   // get publications
-  let pubs_fut = updatePubs(filters);
-
   let publication_types = await publication_types_fut;
   let projects = await projects_fut;
   let pubs = await pubs_fut;
+  let pubsCount = await pubs_count_fut;
 
   Vue.component('pub', {
     props: {
@@ -118,6 +144,12 @@ async function Pubs(id, baseurl = 'https://publications.icecube.aq', filters = {
       projects: [],
       sites: '',
       project_labels: {},
+    },
+    computed: {
+        day_month_year: function() {
+            const d = new Date(this.date);
+            return d.getDate()+' '+d.toLocaleString('default', { month: 'long' })+' '+d.getFullYear();
+        }
     },
     methods: {
       getDomain: function(u){
@@ -137,7 +169,7 @@ async function Pubs(id, baseurl = 'https://publications.icecube.aq', filters = {
   <div><span class="authors" v-for="author in authors"><span class="author">{{ author }}</span></span></div>
   <div><span class="type">({{ type }})</span>
   <span class="citation">{{ citation }}</span>
-  <span class="date">{{ date }}</span></div>
+  <span class="date">{{ day_month_year }}</span></div>
   <div>
     <span class="downloads" v-if="downloads">Download:
       <span class="download" v-for="link in downloads"><a :href="link" target="_blank">{{ getDomain(link) }}</a></span>
@@ -161,30 +193,86 @@ async function Pubs(id, baseurl = 'https://publications.icecube.aq', filters = {
     el: id,
     data: {
       filters: filters_with_defaults,
+      page: 1,
+      limit: 20,
       pubs: pubs,
+      count: pubsCount,
       publication_types: publication_types,
       projects: projects,
       refresh: 0,
       typing: ''
+    },
+    computed: {
+      page_links: function(){
+        let ret = []
+        let pages = Math.ceil(this.count/this.limit);
+        let first = Math.max(1, this.page - 3);
+        let last = Math.min(pages, this.page + 3);
+
+        if (this.page > 1) {
+          ret.push('prev')
+        }
+        if (first > 1) {
+          ret.push('first')
+        }
+        for(i=first;i<=last;i++){
+          ret.push(i)
+        }
+        if (last < pages) {
+          ret.push('last')
+        }
+        if (this.page < pages) {
+          ret.push('next')
+        }
+        return ret
+      }
     },
     watch: {
       filters: {
         handler: function(newFilters, oldFilters) {
           console.log("debouncing")
           this.typing = '...'
+          this.page = 1
           this.debouncedUpdate()
         },
         deep: true
+      },
+      limit: function(newLimit, oldLimit) {
+        this.typing = '...'
+        this.page = 1
+        this.debouncedUpdate()
       },
     },
     created: function() {
       this.debouncedUpdate = _.debounce(this.update, 250)
     },
     methods: {
+      setPage: function(p) {
+        if (p == 'next') {
+          this.page += 1
+        } else if (p == 'prev') {
+          this.page -= 1
+        } else if (p == 'first') {
+          this.page = 1
+        } else if (p == 'last') {
+          this.page = Math.ceil(this.count/this.limit);
+        } else if (!isNaN(p)) {
+          this.page = p;
+        } else {
+          console.log('bad page: '+p)
+          return
+        }
+        this.typing = '...'
+        this.update()
+      },
       update: async function() {
-        const params = JSON.parse(JSON.stringify( this.filters ));
-        const ret = await updatePubs(params);
-        this.pubs = ret;
+        let params = JSON.parse(JSON.stringify( this.filters ));
+        params['page'] = this.page-1
+        params['limit'] = this.limit
+        const count_fut = updatePubsCount(params)
+        const pubs_fut = updatePubs(params);
+        this.count = await count_fut;
+        this.pubs = await pubs_fut;
         this.typing = '';
       },
       type_disabled: function(t){
