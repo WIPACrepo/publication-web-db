@@ -62,4 +62,40 @@ article.publication {
     margin: .2rem 0;
 }
 
-
+.publication_list>div {
+    margin: 1rem;
+}
+.publication_list .publication_count, .publication_list .pagination {
+    margin: 1rem 0;
+}
+.publication_list .set_limit {
+    float: right;
+}
+.publication_list .set_limit input {
+    padding: 0;
+    width: 2rem;
+    text-align: center;
+}
+@media screen and (max-width: 640px) {
+    .publication_list .set_limit {
+        float: none;
+    }
+}
+.publication_list .pagination a {
+    display: inline-block;
+    padding: 0 .1rem;
+    margin: .2rem;
+    font-size: 1rem;
+    text-transform: capitalize;
+    color: #4285f4;
+    cursor: pointer;
+}
+.publication_list .pagination a:hover {
+    text-decoration: underline;
+}
+.publication_list .pagination a.current {
+    color: black;
+}
+.publication_list .pagination a.numeric {
+    padding: 0;
+}
