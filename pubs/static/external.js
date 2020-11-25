@@ -46,17 +46,19 @@ const pub_html = `
   <h2>Publications</h2>
   <div>
     <div class="publication_count">Search returned {{ count }} results</div>
-    <div v-if="page > 1 || count >= limit" class="pagination">
-      <div class="set_limit"><label for="set_limit">Publications per Page: <input type="text" id="set_limit" v-model.number="limit" /></div>
-      <a v-for="p in page_links" @click="setPage(p)" :aria-label="'Page '+p" :class="{current: p == page, numeric: !isNaN(p)}">{{ p }}</a>
+    <div v-if="page > 1 || count >= limit" class="publication_header">
+      <div class="publication_pagination">
+        <a v-for="p in page_links" @click="setPage(p)" :aria-label="'Page '+p" :class="{publication_current: p == page, publication_numeric: !isNaN(p)}">{{ p }}</a>
+      </div>
+      <div class="publication_set_limit"><label for="set_limit">Publications per Page: <input type="text" id="set_limit" v-model.number="limit" /></div>
     </div>
     <hr>
     <div v-if="typing">{{ typing }}</div>
     <div v-else>
       <pub v-for="pub in pubs" v-bind="pub" :project_labels="projects"></pub>
       <hr>
-      <div v-if="page > 1 || count >= limit" class="pagination">
-        <a v-for="p in page_links" @click="setPage(p)" :aria-label="'Page '+p" :class="{current: p == page, numeric: !isNaN(p)}">{{ p }}</a>
+      <div v-if="page > 1 || count >= limit" class="publication_pagination">
+        <a v-for="p in page_links" @click="setPage(p)" :aria-label="'Page '+p" :class="{publication_current: p == page, publication_numeric: !isNaN(p)}">{{ p }}</a>
       </div>
     </div>
   </div>
@@ -238,9 +240,15 @@ async function Pubs(id, baseurl = 'https://publications.icecube.aq', filters = {
         deep: true
       },
       limit: function(newLimit, oldLimit) {
-        this.typing = '...'
-        this.page = 1
-        this.debouncedUpdate()
+        if (newLimit == oldLimit) {
+          return
+        } else if (isNaN(newLimit) || newLimit < 1) {
+          this.limit = oldLimit;
+        } else {
+          this.typing = '...'
+          this.page = 1
+          this.debouncedUpdate()
+        }
       },
     },
     created: function() {

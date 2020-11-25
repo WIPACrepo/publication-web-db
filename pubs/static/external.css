@@ -65,37 +65,38 @@ article.publication {
 .publication_list>div {
     margin: 1rem;
 }
-.publication_list .publication_count, .publication_list .pagination {
-    margin: 1rem 0;
+.publication_list .publication_count {
+    margin: 1rem 0 .5rem;
 }
-.publication_list .set_limit {
-    float: right;
+.publication_list .publication_header {
+    display: flex;
+    justify-content: space-between;
+    column-gap: 2rem;
+    flex-wrap: wrap-reverse;
 }
-.publication_list .set_limit input {
+.publication_list .publication_set_limit, .publication_list .publication_pagination {
+    flex-shrink: 0;
+    margin: .5rem 0;
+}
+.publication_list .publication_set_limit input {
     padding: 0;
     width: 2rem;
     text-align: center;
 }
-@media screen and (max-width: 640px) {
-    .publication_list .set_limit {
-        float: none;
-    }
-}
-.publication_list .pagination a {
+.publication_list .publication_pagination a {
     display: inline-block;
     padding: 0 .1rem;
     margin: .2rem;
-    font-size: 1rem;
     text-transform: capitalize;
     color: #4285f4;
     cursor: pointer;
 }
-.publication_list .pagination a:hover {
+.publication_list .publication_pagination a:hover {
     text-decoration: underline;
 }
-.publication_list .pagination a.current {
+.publication_list .publication_pagination a.publication_current {
     color: black;
 }
-.publication_list .pagination a.numeric {
+.publication_list .publication_pagination a.publication_numeric {
     padding: 0;
 }
