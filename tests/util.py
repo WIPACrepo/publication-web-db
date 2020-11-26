@@ -22,9 +22,12 @@ def port():
     return ephemeral_port
 
 @pytest.fixture
-async def mongo_client():
+async def mongo_client(monkeypatch):
+    if 'DB_URL' not in os.environ:
+        monkeypatch.setenv('DB_URL', 'mongodb://localhost/pub_db_test')
+
     default_config = {
-       'DB_URL': 'mongodb://localhost/pub_db',
+       'DB_URL': None,
     }
     config = from_environment(default_config)
     db_url, db_name = config['DB_URL'].rsplit('/', 1)
