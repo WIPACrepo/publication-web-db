@@ -2,6 +2,7 @@ from datetime import datetime
 import logging
 
 import pymongo
+from bson.objectid import ObjectId
 
 from . import PUBLICATION_TYPES, PROJECTS, SITES
 
@@ -33,7 +34,6 @@ def create_indexes(db_url, db_name, background=True):
                                      weights={'title': 10, 'authors': 5, 'citation': 1},
                                      name='text_index', background=background)
 
-
 async def add_pub(db, title, authors, pub_type, citation, date, downloads, projects, sites=None):
     assert isinstance(title, str)
     assert isinstance(authors, list)
@@ -64,3 +64,42 @@ async def add_pub(db, title, authors, pub_type, citation, date, downloads, proje
         "sites": sites,
     }
     await db.publications.insert_one(data)
+
+async def edit_pub(db, mongo_id, title=None, authors=None, pub_type=None, citation=None, date=None, downloads=None, projects=None, sites=None):
+    match = {'_id': ObjectId(mongo_id)}
+    update = {}
+    if title:
+        assert isinstance(title, str)
+        update['title'] = title
+    if authors:
+        assert isinstance(authors, list)
+        for a in authors:
+            assert isinstance(a, str)
+        update['authors'] = authors
+    if pub_type:
+        assert pub_type in PUBLICATION_TYPES
+        update['type'] = pub_type
+    if citation:
+        assert isinstance(citation, str)
+        update['citation'] = citation
+    if date:
+        assert isinstance(date, str)
+        date_format(date)
+        update['date'] = date
+    if downloads:
+        assert isinstance(downloads, list)
+        for d in downloads:
+            assert isinstance(d, str)
+        update['downloads'] = downloads
+    if projects:
+        assert isinstance(projects, list)
+        for p in projects:
+            assert p in PROJECTS
+        update['projects'] = projects
+    if sites:
+        assert isinstance(sites, list)
+        for s in sites:
+            assert s in SITES
+        update['sites'] = sites
+
+    await db.publications.update_one(match, {'$set': update})

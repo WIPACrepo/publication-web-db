@@ -17,7 +17,7 @@ from bson.objectid import ObjectId
 
 from . import __version__ as version
 from . import PUBLICATION_TYPES, PROJECTS, SITES
-from .utils import create_indexes, date_format, add_pub
+from .utils import create_indexes, date_format, add_pub, edit_pub
 
 logger = logging.getLogger('server')
 
@@ -173,47 +173,51 @@ class Manage(BaseHandler):
     @catch_error
     @basic_auth
     async def get(self):
-        pubs = await self.get_pubs(mongoid=True)
-        self.render('main.html', edit=True, **pubs, hide_projects=False)
-
-    @catch_error
-    @basic_auth
-    async def post(self):
-        if action := self.get_argument('action', None):
-            mongoid = ObjectId(self.get_argument('pub_id'))
-            if action == 'delete':
-                await self.db.publications.delete_one({'_id': mongoid})
-            else:
-                raise HTTPError(400, reason='bad action')
-        pubs = await self.get_pubs(mongoid=True)
-        self.render('main.html', edit=True, **pubs, hide_projects=False)
-
-class New(BaseHandler):
-    @catch_error
-    @basic_auth
-    async def get(self):
         existing_authors = await self.get_authors()
-        self.render('new.html', existing_authors=existing_authors)
+        pubs = await self.get_pubs(mongoid=True)
+        self.render('manage.html', message='', existing_authors=existing_authors, **pubs)
 
     @catch_error
     @basic_auth
     async def post(self):
+        message = ''
         try:
-            doc = {
-                'title': self.get_argument('title').strip(),
-                'authors': self.get_arguments('existing_authors')+[a.strip() for a in self.get_argument('new_authors').split('\n') if a.strip()],
-                'date': self.get_argument('date'),
-                'type': self.get_argument('type'),
-                'citation': self.get_argument('citation').strip(),
-                'downloads': [d.strip() for d in self.get_argument('downloads').split('\n') if d.strip()],
-                'projects': self.get_arguments('projects'),
-                'sites': self.get_arguments('sites'),
-            }
-            await add_pub(db=self.db, **doc)
-
-            self.redirect('/manage')
+            if action := self.get_argument('action', None):
+                if action == 'delete':
+                    mongoid = ObjectId(self.get_argument('pub_id'))
+                    await self.db.publications.delete_one({'_id': mongoid})
+                elif action == 'new':
+                    doc = {
+                        'title': self.get_argument('new_title').strip(),
+                        'authors': [a.strip() for a in self.get_argument('new_authors').split('\n') if a.strip()],
+                        'date': self.get_argument('new_date'),
+                        'pub_type': self.get_argument('new_type'),
+                        'citation': self.get_argument('new_citation').strip(),
+                        'downloads': [d.strip() for d in self.get_argument('new_downloads').split('\n') if d.strip()],
+                        'projects': self.get_arguments('new_projects'),
+                        'sites': self.get_arguments('new_sites'),
+                    }
+                    await add_pub(db=self.db, **doc)
+                elif action == 'edit':
+                    mongoid = ObjectId(self.get_argument('pub_id'))
+                    doc = {
+                        'title': self.get_argument('new_title').strip(),
+                        'authors': [a.strip() for a in self.get_argument('new_authors').split('\n') if a.strip()],
+                        'date': self.get_argument('new_date'),
+                        'pub_type': self.get_argument('new_type'),
+                        'citation': self.get_argument('new_citation').strip(),
+                        'downloads': [d.strip() for d in self.get_argument('new_downloads').split('\n') if d.strip()],
+                        'projects': self.get_arguments('new_projects'),
+                        'sites': self.get_arguments('new_sites'),
+                    }
+                    await edit_pub(db=self.db, mongo_id=mongoid, **doc)
+                else:
+                    raise Exception('bad action')
         except Exception as e:
-            self.render('new.html', error=e)
+            message = f'Error: {e}'
+        existing_authors = await self.get_authors()
+        pubs = await self.get_pubs(mongoid=True)
+        self.render('manage.html', message=message, existing_authors=existing_authors, **pubs)
 
 class APIBaseHandler(BaseHandler):
     def write_error(self, status_code=500, **kwargs):
@@ -296,7 +300,6 @@ def create_server():
 
     server.add_route(r'/', Main, main_args)
     server.add_route(r'/manage', Manage, main_args)
-    server.add_route(r'/new', New, main_args)
     server.add_route(r'/api/publications', APIPubs, main_args)
     server.add_route(r'/api/publications/count', APIPubsCount, main_args)
     server.add_route(r'/api/filter_defaults', APIFilterDefaults, main_args)

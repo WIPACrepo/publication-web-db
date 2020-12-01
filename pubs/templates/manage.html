@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block main %}
+<h1>Publication Database</h1>
+{% if message %}
+<div class="error_box">{{ message }}</div>
+{% end %}
+<div class="new">
+  <h2>New Publication</h2>
+  <form action="{{ request.path }}" method="post">
+    <input type="hidden" name="action" value="new" />
+    <div class="input vcenter"><label for="new_title">Title: </label><input type="text" name="new_title" /></div>
+    <div class="input"><label for="new_authors">Authors: </label><textarea name="new_authors"></textarea></div>
+    <div class="input vcenter"><label for="new_date">Date of publication: </label><input type="date" name="new_date" /></div>
+    <div class="input vcenter"><label for="new_type">Publication Type: </label><select name="new_type">
+      {% for t in PUBLICATION_TYPES %}
+      <option value="{{ t }}">{{ PUBLICATION_TYPES[t] }}</option>
+      {% end %}
+    </select></div>
+    <div class="input"><label for="new_citation">Citation:</label><textarea name="new_citation"></textarea></div>
+    <div class="input"><label for="new_downloads">Download links:</label><textarea name="new_downloads"></textarea></div>
+    <div class="input"><label for="new_projects">Project: </label><div class="projects_box">
+      {% for p in PROJECTS %}
+      <div class="checkbox">
+        <input type="checkbox" name="new_projects" id="new_projects_{{ p }}" value="{{ p }}" />
+        <label for="new_projects_{{ p }}">{{ PROJECTS[p] }}</label>
+      </div>
+      {% end %}
+    </div></div>
+    <div class="input"><label for="new_sites">Site: </label><div class="project_box">
+      {% for s in SITES %}
+      <div class="checkbox">
+        <input type="checkbox" name="new_sites" id="new_sites_{{ s }}" value="{{ s }}" />
+        <label for="new_sites_{{ s }}">{{ SITES[s] }}</label>
+      </div>
+      {% end %}
+    </div></div>
+    {% module xsrf_form_html() %}
+    {% if search %}<input type="hidden" name="search" value="{{ search }}" />{% end %}
+    {% if start_date %}<input type="hidden" name="start_date" value="{{ start_date }}" />{% end %}
+    {% if end_date %}<input type="hidden" name="end_date" value="{{ end_date }}" />{% end %}
+    {% for t in type %}<input type="hidden" name="type" value="{{ t }}" />{% end %}
+    {% for p in projects %}<input type="hidden" name="projects" value="{{ p }}" />{% end %}
+    {% for s in sites %}<input type="hidden" name="sites" value="{{ s }}" />{% end %}
+    <div class="input"><input type="submit" value="Create" /></div>
+  </form>
+</div>
+<div class="publication_filters">
+  <h2>Existing Publications:</h2>
+  <form action="{{ request.path }}" method="get" autocomplete="off">
+    <div class="input vcenter search"><label for="search">Text search: </label><input type="text" name="search" value="{{ search }}" /></div>
+    <div class="col">
+      <div class="input vcenter"><label for="start_date">Start date: </label><input type="date" name="start_date" value="{{ start_date }}" /></div>
+      <div class="input vcenter"><label for="end_date">End date: </label><input type="date" name="end_date" value="{{ end_date }}" /></div>
+      <div class="input"><label for="type">Type: </label><div class="type_box">
+        {% for t in PUBLICATION_TYPES %}
+        <div class="checkbox">
+          <input type="checkbox" name="type" id="type_{{ t }}" value="{{ t }}" {% if t in type %}checked {% end %}/>
+          <label for="type_{{ t }}">{{ PUBLICATION_TYPES[t] }}</label>
+        </div>
+        {% end %}
+      </div></div>
+    </div><div class="col">
+      <div class="input"><label for="projects">Project: </label><div class="projects_box">
+        {% for p in PROJECTS %}
+        <div class="checkbox">
+          <input type="checkbox" name="projects" id="projects_{{ p }}" value="{{ p }}" {% if p in projects %}checked {% end %}/>
+          <label for="projects_{{ p }}">{{ PROJECTS[p] }}</label>
+        </div>
+        {% end %}
+      </div></div>
+    </div><div class="col">
+      <div class="input"><label for="sites">Site: </label><div class="sites_box">
+        {% for p in SITES %}
+        <div class="checkbox">
+          <input type="checkbox" name="sites" id="sites_{{ p }}" value="{{ p }}" {% if p in sites %}checked {% end %}/>
+          <label for="sites_{{ p }}">{{ SITES[p] }}</label>
+        </div>
+        {% end %}
+      </div></div>
+    </div>
+    {% module xsrf_form_html() %}
+    <div class="input vcenter submit"><input type="submit" value="Filter" /></div>
+  </form>
+</div>
+<div>{{ len(publications) }} publications</div>
+<hr>
+<div class="publications">
+{% for pub in publications %}
+<article class="publication">
+  <div><span class="title">{{ pub['title'] }}</span></div>
+  <div><span class="authors">
+    {% for author in pub['authors'] %}<span class="author">{{ author }}</span>{% end %}
+  </span></div>
+  <div><span class="type">({{ PUBLICATION_TYPES[pub['type']] }})</span>
+  <span class="citation">{{ pub['citation'] }}</span>
+  <span class="date">{{ date_format(pub['date']) }}</span></div>
+  <div>
+    {% if pub['downloads'] %}
+    <span class="downloads">Download:
+      {% for link in pub['downloads'] %}<span class="download"><a href="{{ link }}" target="_blank">{{ domain(link) }}</a></span>{% end %}
+    </span>
+    {% end %}
+    {% if pub['projects'] %}
+      <span class="projects">Project:
+      {% for project in pub['projects'] %}<span class="project">{{ PROJECTS[project] }}</span>{% end %}
+      </span>
+    {% end %}
+    {% if pub['sites'] %}
+      <span class="sites">Site:
+      {% for site in pub['sites'] %}<span class="site">{{ SITES[site] }}</span>{% end %}
+      </span>
+    {% end %}
+    <div class="actions">
+      <button class="edit">Edit</button>
+      <form class="delete" action="{{ request.path }}" method="post">
+        {% module xsrf_form_html() %}
+        {% if search %}<input type="hidden" name="search" value="{{ search }}" />{% end %}
+        {% if start_date %}<input type="hidden" name="start_date" value="{{ start_date }}" />{% end %}
+        {% if end_date %}<input type="hidden" name="end_date" value="{{ end_date }}" />{% end %}
+        {% for t in type %}<input type="hidden" name="type" value="{{ t }}" />{% end %}
+        {% for p in projects %}<input type="hidden" name="projects" value="{{ p }}" />{% end %}
+        {% for s in sites %}<input type="hidden" name="sites" value="{{ s }}" />{% end %}
+        <input type="hidden" name="pub_id" value="{{ pub['_id'] }}" />
+        <input type="hidden" name="action" value="delete" />
+        <input type="submit" value="Delete" />
+      </form>
+    </div>
+  </div>
+</article>
+{% end %}
+</div>
+{% end %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script>
+const PUBLICATION_TYPES = { {% for p in PUBLICATION_TYPES %} "{{ p }}" : "{{ PUBLICATION_TYPES[p] }}", {% end %} };
+const PROJECTS = { {% for p in PROJECTS %} "{{ p }}" : "{{ PROJECTS[p] }}", {% end %} };
+const SITES = { {% for s in SITES %} "{{ s }}" : "{{ SITES[s] }}", {% end %} };
+$('button.edit').click(function(){
+  let pub = $(this).parents('article.publication');
+  const title = pub.find('.title').text();
+  const authors_src = pub.find('.author').map(function(){return $(this).text()});
+  let authors = [];
+  for(const a of authors_src) {
+    authors.push(a);
+  }
+  let pub_type = Object.keys(PUBLICATION_TYPES)[0];
+  const pub_type_value = pub.find('.type').text().slice(1,-1);
+  for(const t in PUBLICATION_TYPES) {
+    if (t == pub_type_value) {
+      pub_type = t;
+      break
+    }
+  }
+  const citation = pub.find('.citation').text();
+  const date = (new Date(pub.find('.date').text())).toISOString().split('T')[0];
+  const downloads_src = pub.find('.download a').map(function(){return $(this).attr('href')});
+  let downloads = [];
+  for(const d of downloads_src) {
+    downloads.push(d);
+  }
+  const projects_src = pub.find('.project').map(function(){return $(this).text()});
+  let projects = [];
+  for(const p of projects_src) {
+    for(const pp in PROJECTS) {
+      if (p == PROJECTS[pp]) {
+        projects.push(pp);
+        break;
+      }
+    }
+  }
+  const sites_src = pub.find('.site').map(function(){return $(this).text()});
+  let sites = [];
+  for(const p of sites_src) {
+    for(const pp in SITES) {
+      if (p == SITES[pp]) {
+        sites.push(pp);
+        break;
+      }
+    }
+  }
+  const pub_id = pub.find('input[name="pub_id"]').val();
+
+  console.log('title:'+title);
+  console.log('authors:');console.log(authors);
+  console.log('pub_type:'+pub_type);
+  console.log('citation:'+citation);
+  console.log('date:'+date);
+  console.log('downloads:');console.log(downloads);
+  console.log('projects:');console.log(projects);
+  console.log('sites:');console.log(sites);
+  console.log('pub_id:'+pub_id);
+
+  $('.new input[name="new_title"]').val(title);
+  $('.new textarea[name="new_authors"]').val(authors.join('\n'));
+  $('.new input[name="new_date"]').val(date);
+  $('.new select[name="new_type"]').val(pub_type);
+  $('.new textarea[name="new_citation"]').val(citation);
+  $('.new textarea[name="new_downloads"]').val(downloads.join('\n'));
+  $('.new input[name="new_projects"]').val(projects);
+  $('.new input[name="new_sites"]').val(sites);
+
+  $('.new input[name="action"]').val('edit').after('<input type="hidden" name="pub_id" value="'+pub_id+'" />');
+  $('.new h2').html('Edit Publication').addClass('editing');
+  $('.new input[type="submit"]').val('Edit');
+  window.scrollTo(0,0);
+});
+</script>
+{% end %}
