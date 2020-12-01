@@ -52,10 +52,13 @@ article.publication {
     content: "|";
     padding: 0 .4rem;
 }
-.publication .downloads {
+.publication .downloads, .publication .projects {
     margin-right: 1rem;
 }
 .publication .projects .project:not(:first-child)::before {
+    content: ", ";
+}
+.publication .sites .site:not(:first-child)::before {
     content: ", ";
 }
 .publication form.edit {

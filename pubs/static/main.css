@@ -108,16 +108,21 @@ div.inline {
 }
 
 div.error_box {
-    display: inline-block;
     margin: 1em 1.5em;
     padding: .7em;
     font-size: 16pt;
     border: 1px solid #666;
-    border-radius: .2em;
 }
 
+.new {
+    margin: 1rem 0 4rem;
+}
 .new form {
     line-height: 1.2rem;
+}
+
+h2.editing {
+    color: #b10023;
 }
 
 .new div.input {
@@ -138,3 +143,14 @@ div.error_box {
     min-width: 15.5rem;
 }
 
+.publication div.actions {
+    margin: .25rem 0;
+}
+.publication div.actions form {
+    display: inline;
+    margin-left: .5rem;
+}
+
+.publication_filters {
+    margin: 1rem 0;
+}

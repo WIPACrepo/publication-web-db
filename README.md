@@ -34,11 +34,7 @@ for an example.
 
 Manage existing publications, if authorized to do so.
 
-This route is responsible for deleting publications.
-
-### New (route: /new)
-
-Adds a publication, if authorized to do so.
+This route is responsible for creating, editing, and deleting publications.
 
 ## Publication Details
 
