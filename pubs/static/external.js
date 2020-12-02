@@ -29,7 +29,7 @@ const pub_html = `
     <div class="input vcenter"><label for="end_date">End date: </label><input type="date" name="end_date" v-model="filters.end_date" /></div>
     <div class="input"><label for="type">Type: </label><div class="type_box">
       <div class="checkbox" v-for="t in  Object.keys(publication_types)">
-        <input type="checkbox" name="type" :id="'type_'+t" :value="t" v-model="filters.type" :disabled="type_disabled(t)" />
+        <input type="checkbox" name="type" :id="'type_'+t" :value="t" :checked="type_selected(t)" @change="type_change(t)" />
         <label :for="'type_'+t">{{ publication_types[t] }}</label>
       </div>
     </div></div>
@@ -283,9 +283,12 @@ async function Pubs(id, baseurl = 'https://publications.icecube.aq', filters = {
         this.pubs = await pubs_fut;
         this.typing = '';
       },
-      type_disabled: function(t){
+      type_change: function(t){
+        this.filters.type = [t];
+      },
+      type_selected: function(t){
         try {
-          return (this.filters.type.length > 0 && this.filters.type[0] != t)
+          return (this.filters.type.length > 0 && this.filters.type[0] == t)
         } catch {
           return false
         }
