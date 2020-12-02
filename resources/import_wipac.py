@@ -101,6 +101,8 @@ where node.type = 'publication'
                         ('IceCube Science', 'proceeding', ['Francis Halzen']),
                         ('IceCube', 'proceeding', ['Albrecht Karle for the IceCube Collaboration']),
                         ('IceCube and the Discovery of High-Energy Cosmic Neutrinos', 'proceeding', ['Francis Halzen']),
+                        ('Neutrino Astronomy at the South Pole', 'proceeding', ['IceCube Collaboration: A. Achterberg et al']),
+                        ('The IceCube Neutrino Telescope', 'proceeding', ['IceCube Collaboration: J. Ahrens et al']),
                     ] and citation not in [r['citation'] for r in ret]:
                     logging.info(f'non-dup already entered: {ret}')
                 elif (title, type, authors) in [ # skip list to remove dups
@@ -126,6 +128,9 @@ where node.type = 'publication'
                 projects = []
                 sites = []
             elif 'icecube' in projects and 'wipac' in projects: # special case
+                projects = ['icecube']
+                sites = ['wipac']
+            elif 'icecube' in projects and 'other' in projects: # special case
                 projects = ['icecube']
                 sites = ['wipac']
             else:
