@@ -27,12 +27,9 @@ const pub_html = `
   <div class="col">
     <div class="input vcenter"><label for="start_date">Start date: </label><input type="date" name="start_date" v-model="filters.start_date" /></div>
     <div class="input vcenter"><label for="end_date">End date: </label><input type="date" name="end_date" v-model="filters.end_date" /></div>
-    <div class="input"><label for="type">Type: </label><div class="type_box">
-      <div class="checkbox" v-for="t in  Object.keys(publication_types)">
-        <input type="checkbox" name="type" :id="'type_'+t" :value="t" :checked="type_selected(t)" @change="type_change(t)" />
-        <label :for="'type_'+t">{{ publication_types[t] }}</label>
-      </div>
-    </div></div>
+    <div class="input"><label for="type">Type: </label>
+      <radio class="type_box" type="type" :name_vals="publication_types" v-model="filters.type"></radio>
+    </div>
   </div><div class="col" v-if="!filters.hide_projects">
     <div class="input"><label for="projects">Project: </label><div class="projects_box">
       <div class="checkbox" v-for="p in  Object.keys(projects)">
@@ -137,15 +134,15 @@ async function Pubs(id, baseurl = 'https://publications.icecube.aq', filters = {
 
   Vue.component('pub', {
     props: {
-      title: '',
-      authors: '',
-      type: '',
-      citation: '',
-      date: '',
-      downloads: [],
-      projects: [],
-      sites: '',
-      project_labels: {},
+      title: String,
+      authors: String,
+      type: String,
+      citation: String,
+      date: String,
+      downloads: Array,
+      projects: Array,
+      sites: String,
+      project_labels: Object
     },
     computed: {
         day_month_year: function() {
@@ -182,6 +179,39 @@ async function Pubs(id, baseurl = 'https://publications.icecube.aq', filters = {
   </div>
 </article>`
   });
+
+  Vue.component('radio', {
+    props: {
+      type: String,
+      name_vals: Object,
+      value: Array
+    },
+    computed: {
+      checked: function(){
+        let ch = {}
+        for(const v in this.name_vals){
+          ch[v] = (this.value.length > 0 && this.value[0] == v)
+        }
+        console.log('checked');console.log(ch)
+        return ch
+      }
+    },
+    methods: {
+      changed: function(v){
+        if (this.value.length > 0 && this.value[0] == v) { // uncheck
+          this.value = []
+        } else { // check
+          this.value = [v]
+        }
+        this.$emit('input', this.value)
+      }
+    },
+    template: `<div>
+<div class="checkbox radio" :class="'checkbox_'+type" v-for="(n,v) in name_vals">
+  <input type="checkbox" name="type" :id="type+'_'+v" :value="v" :checked="checked[v]" @input="changed(v)" />
+  <label :for="type+'_'+v">{{ n }}</label>
+</div></div>`
+  })
 
   // write html
   if (id[0] == '#') {
@@ -282,16 +312,6 @@ async function Pubs(id, baseurl = 'https://publications.icecube.aq', filters = {
         this.count = await count_fut;
         this.pubs = await pubs_fut;
         this.typing = '';
-      },
-      type_change: function(t){
-        this.filters.type = [t];
-      },
-      type_selected: function(t){
-        try {
-          return (this.filters.type.length > 0 && this.filters.type[0] == t)
-        } catch {
-          return false
-        }
       }
     }
   });
