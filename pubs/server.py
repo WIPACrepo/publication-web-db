@@ -8,6 +8,8 @@ import binascii
 from functools import wraps
 from urllib.parse import urlparse
 import base64
+import csv
+from io import StringIO
 
 from tornado.web import RequestHandler, HTTPError
 from rest_tools.server import RestServer, from_environment, catch_error
@@ -169,6 +171,27 @@ class Main(BaseHandler):
 
         self.render('main.html', **pubs, hide_projects=hide_projects)
 
+class CSV(BaseHandler):
+    async def get(self):
+        hide_projects = self.get_argument('hide_projects', 'false').lower() == 'true'
+
+        pubs = await self.get_pubs()
+
+        f = StringIO()
+        writer = csv.DictWriter(f, fieldnames=list(pubs['publications'][0].keys()))
+        writer.writeheader()
+        for p in pubs['publications']:
+            data = {}
+            for k in p:
+                if isinstance(p[k], list):
+                    data[k] = ','.join(p[k])
+                else:
+                    data[k] = p[k]
+            writer.writerow(data)
+
+        self.write(f.getvalue())
+        self.set_header('Content-Type','text/csv; charset=utf-8')
+
 class Manage(BaseHandler):
     @catch_error
     @basic_auth
@@ -299,6 +322,7 @@ def create_server():
                         debug=config['DEBUG'])
 
     server.add_route(r'/', Main, main_args)
+    server.add_route(r'/csv', CSV, main_args)
     server.add_route(r'/manage', Manage, main_args)
     server.add_route(r'/api/publications', APIPubs, main_args)
     server.add_route(r'/api/publications/count', APIPubsCount, main_args)
