@@ -142,6 +142,10 @@ h2.editing {
 .new select {
     min-width: 15.5rem;
 }
+.new textarea {
+    min-width: 10rem;
+    width: 100%;
+}
 
 .publication div.actions {
     margin: .25rem 0;
