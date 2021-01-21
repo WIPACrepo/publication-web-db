@@ -43,9 +43,11 @@ const pub_html = `
   <h2>Publications</h2>
   <div>
     <div class="publication_count">Search returned {{ count }} results</div>
-    <div v-if="page > 1 || count >= limit" class="publication_header">
+    <div class="publication_header">
       <div class="publication_pagination">
-        <a v-for="p in page_links" @click="setPage(p)" :aria-label="'Page '+p" :class="{publication_current: p == page, publication_numeric: !isNaN(p)}">{{ p }}</a>
+        <div v-if="page > 1 || count >= limit">
+          <a v-for="p in page_links" @click="setPage(p)" :aria-label="'Page '+p" :class="{publication_current: p == page, publication_numeric: !isNaN(p)}">{{ p }}</a>
+        </div>
       </div>
       <div class="publication_set_limit"><label for="set_limit">Publications per Page: <input type="text" id="set_limit" v-model.number="limit" /></div>
     </div>
