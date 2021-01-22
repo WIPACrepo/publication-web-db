@@ -149,7 +149,7 @@ async function Pubs(id, baseurl = 'https://publications.icecube.aq', filters = {
     computed: {
         day_month_year: function() {
             const d = new Date(this.date);
-            return d.getDate()+' '+d.toLocaleString('default', { month: 'long' })+' '+d.getFullYear();
+            return d.getUTCDate()+' '+d.toLocaleString('default', { month: 'long', timeZone: 'UTC' })+' '+d.getUTCFullYear();
         }
     },
     methods: {
