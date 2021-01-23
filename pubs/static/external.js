@@ -80,7 +80,7 @@ let URLSerializer = function(p){
   return ret.join('&')
 };
 
-async function Pubs(id, baseurl = 'https://publications.icecube.aq', filters = {}) {
+async function Pubs(id, baseurl = 'https://publications.icecube.aq', filters = {}, show_dates = false) {
   await loadDeps(baseurl);
 
   var updatePubs = async function(filters) {
@@ -150,6 +150,9 @@ async function Pubs(id, baseurl = 'https://publications.icecube.aq', filters = {
         day_month_year: function() {
             const d = new Date(this.date);
             return d.getUTCDate()+' '+d.toLocaleString('default', { month: 'long', timeZone: 'UTC' })+' '+d.getUTCFullYear();
+        },
+        show_date: function() {
+            return show_dates
         }
     },
     methods: {
@@ -170,7 +173,7 @@ async function Pubs(id, baseurl = 'https://publications.icecube.aq', filters = {
   <div><span class="authors" v-for="author in authors"><span class="author">{{ author }}</span></span></div>
   <div><span class="type">({{ type }})</span>
   <span class="citation">{{ citation }}</span>
-  <span class="date">{{ day_month_year }}</span></div>
+  <span v-if="show_date" class="date">{{ day_month_year }}</span></div>
   <div>
     <span class="downloads" v-if="downloads">Download:
       <span class="download" v-for="link in downloads"><a :href="link" target="_blank">{{ getDomain(link) }}</a></span>
