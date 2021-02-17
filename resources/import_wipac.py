@@ -79,14 +79,15 @@ where node.type = 'publication'
             citation = row['citation'].strip()
             date = row['date'].isoformat()
 
+            # 2021-02-16: Jean asked for this to be removed
             # improved date finding
-            for part in reversed(citation.split(',')):
-                try:
-                    part = part.split(';',1)[0].split('-',1)[-1].strip()
-                    date = datetime.strptime(part, "%d %B %Y").isoformat()
-                    break
-                except Exception:
-                    continue
+            #for part in reversed(citation.split(',')):
+            #    try:
+            #        part = part.split(';',1)[0].split('-',1)[-1].strip()
+            #        date = datetime.strptime(part, "%d %B %Y").isoformat()
+            #        break
+            #    except Exception:
+            #        continue
 
             cursor.execute(sql_downloads, (row['nid'],))
             row['downloads'] = [cleanURL(r['url']) for r in cursor.fetchall()]
