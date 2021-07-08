@@ -149,7 +149,7 @@ $('button.edit').click(function(){
   let pub_type = Object.keys(PUBLICATION_TYPES)[0];
   const pub_type_value = pub.find('.type').text().slice(1,-1);
   for(const t in PUBLICATION_TYPES) {
-    if (t == pub_type_value) {
+    if (PUBLICATION_TYPES[t] == pub_type_value) {
       pub_type = t;
       break
     }
