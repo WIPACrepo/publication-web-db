@@ -174,8 +174,6 @@ class Main(BaseHandler):
 
 class CSV(BaseHandler):
     async def get(self):
-        hide_projects = self.get_argument('hide_projects', 'false').lower() == 'true'
-
         pubs = await self.get_pubs()
 
         f = StringIO()
@@ -191,7 +189,7 @@ class CSV(BaseHandler):
             writer.writerow(data)
 
         self.write(f.getvalue())
-        self.set_header('Content-Type','text/csv; charset=utf-8')
+        self.set_header('Content-Type', 'text/csv; charset=utf-8')
 
 class Manage(BaseHandler):
     @catch_error
