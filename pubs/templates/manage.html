@@ -7,6 +7,11 @@
 {% end %}
 <div class="new">
   <h2>New Publication</h2>
+  <form action="{{ request.path }}" method="post" enctype="multipart/form-data">
+    {% module xsrf_form_html() %}
+    <input type="hidden" name="action" value="import" />
+    <div class="input vcenter import_file"><label for="import_file">Import many from file:</label><input type="file" name="import_file" /><input type="submit" value="Upload" /></div>
+  </form>
   <form action="{{ request.path }}" method="post">
     <input type="hidden" name="action" value="new" />
     <div class="input vcenter"><label for="new_title">Title: </label><textarea name="new_title"></textarea></div>

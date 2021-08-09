@@ -136,8 +136,12 @@ h2.editing {
 }
 .new div.input>label {
     vertical-align: top;
-    padding-right: 1rem;
+    padding: .2rem 1rem .2rem 0;
     width: 12rem;
+}
+.new div.input.import_file {
+    padding-bottom: 1rem;
+    border-bottom: 1px solid black;
 }
 .new select {
     min-width: 15.5rem;
