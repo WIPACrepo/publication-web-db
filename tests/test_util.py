@@ -119,3 +119,21 @@ async def test_edit_pub_err(mocker, title, authors, pub_type, citation, date, do
     with pytest.raises(Exception):
         await pubs.utils.edit_pub(db, str(mongo_id), title=title, authors=authors, pub_type=pub_type,
                 citation=citation, date=date, downloads=downloads, projects=projects, sites=sites)
+
+@pytest.mark.asyncio
+async def test_import_file_json(mocker):
+    db = mocker.AsyncMock()
+    json_data = '''{"publications":[{"title":"foo","authors":["bar"],"type":"journal","citation":"cite",
+"date":"2020-11-03T00:00:00","downloads":["baz"],"projects":["icecube"],"sites":["icecube","wipac"]}]}'''
+    await pubs.utils.try_import_file(db, json_data)
+
+    json_data = '''[{"title":"foo","authors":["bar"],"type":"journal","citation":"cite",
+"date":"2020-11-03T00:00:00","downloads":["baz"],"projects":["icecube"],"sites":["icecube","wipac"]}]'''
+    await pubs.utils.try_import_file(db, json_data)
+
+@pytest.mark.asyncio
+async def test_import_file_csv(mocker):
+    db = mocker.AsyncMock()
+    csv_data = '''title,authors,type,citation,date,downloads,projects,sites
+foo,bar,journal,cite,2020-11-03T00:00:00,baz,icecube,"icecube,wipac"'''
+    await pubs.utils.try_import_file(db, csv_data)

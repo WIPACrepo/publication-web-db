@@ -1,5 +1,8 @@
 from datetime import datetime
 import logging
+import json
+import csv
+from io import StringIO
 
 import pymongo
 from bson.objectid import ObjectId
@@ -34,7 +37,7 @@ def create_indexes(db_url, db_name, background=True):
                                      weights={'title': 10, 'authors': 5, 'citation': 1},
                                      name='text_index', background=background)
 
-async def add_pub(db, title, authors, pub_type, citation, date, downloads, projects, sites=None):
+def validate(title, authors, pub_type, citation, date, downloads, projects, sites):
     assert isinstance(title, str)
     assert isinstance(authors, list)
     for a in authors:
@@ -49,10 +52,13 @@ async def add_pub(db, title, authors, pub_type, citation, date, downloads, proje
     assert isinstance(projects, list)
     for p in projects:
         assert p in PROJECTS
-    if not sites:
-        sites = []
     for s in sites:
         assert s in SITES
+
+async def add_pub(db, title, authors, pub_type, citation, date, downloads, projects, sites=None):
+    if not sites:
+        sites = []
+    validate(title, authors, pub_type, citation, date, downloads, projects, sites)
     data = {
         "title": title,
         "authors": authors,
@@ -103,3 +109,37 @@ async def edit_pub(db, mongo_id, title=None, authors=None, pub_type=None, citati
         update['sites'] = sites
 
     await db.publications.update_one(match, {'$set': update})
+
+async def try_import_file(db, data):
+    """
+    Try importing authors from file data (csv or json).
+    """
+    # parse the data
+    try:
+        pubs = json.loads(data)
+        if 'publications' in pubs:
+            pubs = pubs['publications']
+    except json.JSONDecodeError:
+        try:
+            def parse_csv(row):
+                for k in row:
+                    val = row[k]
+                    if k in ('authors', 'downloads', 'projects', 'sites'):
+                        row[k] = val.split(',') if val else []
+                return row
+            with StringIO(data) as f:
+                reader = csv.DictReader(f)
+                pubs = [parse_csv(row) for row in reader]
+        except csv.Error:
+            raise Exception('File is not in a recognizable format. Only json or csv are valid.')
+
+    # now validate
+    for p in pubs:
+        try:
+            validate(p['title'], p['authors'], p['type'], p['citation'], p['date'], p['downloads'], p['projects'], p['sites'])
+        except AssertionError:
+            raise Exception(f'Error validating pub with title {p["title"][:100]}')
+
+    # now add:to db
+    for p in pubs:
+        await db.publications.replace_one({'title': p['title'], 'authors': p['authors'], 'date': p['date']}, p, upsert=True)

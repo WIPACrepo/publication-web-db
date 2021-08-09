@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 import base64
 import csv
 from io import StringIO
+import itertools
 
 from tornado.web import RequestHandler, HTTPError
 from rest_tools.server import RestServer, from_environment, catch_error
@@ -19,7 +20,7 @@ from bson.objectid import ObjectId
 
 from . import __version__ as version
 from . import PUBLICATION_TYPES, PROJECTS, SITES
-from .utils import create_indexes, date_format, add_pub, edit_pub
+from .utils import create_indexes, date_format, add_pub, edit_pub, try_import_file
 
 logger = logging.getLogger('server')
 
@@ -234,9 +235,17 @@ class Manage(BaseHandler):
                         'sites': self.get_arguments('new_sites'),
                     }
                     await edit_pub(db=self.db, mongo_id=mongoid, **doc)
+                elif action == 'import':
+                    if not self.request.files:
+                        raise Exception('no files uploaded')
+                    for files in itertools.chain(self.request.files.values()):
+                        for f in files:
+                            await try_import_file(self.db, f.body.decode('utf-8'))
                 else:
                     raise Exception('bad action')
         except Exception as e:
+            if self.debug:
+                logging.debug('manage error', exc_info=True)
             message = f'Error: {e}'
         existing_authors = await self.get_authors()
         pubs = await self.get_pubs(mongoid=True)
