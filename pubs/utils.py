@@ -124,7 +124,7 @@ async def try_import_file(db, data):
             def parse_csv(row):
                 for k in row:
                     val = row[k]
-                    if k in ('authors', 'downloads', 'projects', 'sites'):
+                    if k in ('downloads', 'projects', 'sites'):
                         row[k] = val.split(',') if val else []
                 return row
             with StringIO(data) as f:
@@ -135,6 +135,8 @@ async def try_import_file(db, data):
 
     # now validate
     for p in pubs:
+        if isinstance(p['authors'], str):
+            p['authors'] = [p['authors']]
         try:
             validate(p['title'], p['authors'], p['type'], p['citation'], p['date'], p['downloads'], p['projects'], p['sites'])
         except AssertionError:

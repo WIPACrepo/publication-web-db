@@ -137,3 +137,10 @@ async def test_import_file_csv(mocker):
     csv_data = '''title,authors,type,citation,date,downloads,projects,sites
 foo,bar,journal,cite,2020-11-03T00:00:00,baz,icecube,"icecube,wipac"'''
     await pubs.utils.try_import_file(db, csv_data)
+
+@pytest.mark.asyncio
+async def test_import_file_csv_authors(mocker):
+    db = mocker.AsyncMock()
+    csv_data = '''title,authors,type,citation,date,downloads,projects,sites
+foo,"bar, baz, and blah",journal,cite,2020-11-03T00:00:00,baz,icecube,"icecube,wipac"'''
+    await pubs.utils.try_import_file(db, csv_data)
