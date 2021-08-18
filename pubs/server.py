@@ -238,7 +238,7 @@ class Manage(BaseHandler):
                         raise Exception('no files uploaded')
                     for files in itertools.chain(self.request.files.values()):
                         for f in files:
-                            await try_import_file(self.db, f.body.decode('utf-8'))
+                            await try_import_file(self.db, f.body.decode('utf-8-sig'))
                 else:
                     raise Exception('bad action')
         except Exception as e:
