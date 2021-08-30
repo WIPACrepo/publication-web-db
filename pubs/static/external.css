@@ -23,6 +23,9 @@
     padding-right: 1rem;
     min-width: 6rem;
 }
+.publication_filters div.input .checkbox>label {
+    display: inline-block;
+}
 .publication_filters .type_box {
     display: inline-block;
 }
