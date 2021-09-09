@@ -49,6 +49,7 @@ def validate(title, authors, pub_type, citation, date, downloads, projects, site
     assert isinstance(downloads, list)
     for d in downloads:
         assert isinstance(d, str)
+    assert projects
     assert isinstance(projects, list)
     for p in projects:
         assert p in PROJECTS
