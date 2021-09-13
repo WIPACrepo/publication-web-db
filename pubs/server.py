@@ -144,6 +144,10 @@ class BaseHandler(RequestHandler):
                 row['_id'] = str(row['_id'])
             if page is not None and limit and i < page*limit:
                 continue
+            if 'projects' in row:
+                row['projects'].sort()
+            if 'sites' in row:
+                row['sites'].sort()
             pubs.append(row)
             if page is not None and limit and len(pubs) >= limit:
                 break
