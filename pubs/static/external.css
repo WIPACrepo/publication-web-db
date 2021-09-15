@@ -31,7 +31,6 @@
 }
 .publication_filters div.search, .publication_filters div.submit {
     width: 100%;
-    align-items: center;
 }
 .publication_filters div.search input {
     width: 100%;

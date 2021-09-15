@@ -23,7 +23,7 @@ var loadDeps = async function(baseurl){
 
 const pub_html = `
 <div class="publication_filters"><form action="javascript:void(0);" autocomplete="off">
-  <div class="input vcenter search">
+  <div class="input search">
     <label for="search">Text search: </label>
     <div>
       <input type="text" name="search" v-model.trim="filters.search" />
