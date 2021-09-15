@@ -23,7 +23,13 @@ var loadDeps = async function(baseurl){
 
 const pub_html = `
 <div class="publication_filters"><form action="javascript:void(0);" autocomplete="off">
-  <div class="input vcenter search"><label for="search">Text search: </label><input type="text" name="search" v-model.trim="filters.search" /></div>
+  <div class="input vcenter search">
+    <label for="search">Text search: </label>
+    <div>
+      <input type="text" name="search" v-model.trim="filters.search" />
+      <div class="search_hint">To search for an exact phrase, enclose term in quotation marks.</div>
+    </div>
+  </div>
   <div class="col">
     <div class="input vcenter"><label for="start_date">Start date: </label><input type="date" name="start_date" v-model="filters.start_date" /></div>
     <div class="input vcenter"><label for="end_date">End date: </label><input type="date" name="end_date" v-model="filters.end_date" /></div>

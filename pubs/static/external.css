@@ -35,7 +35,12 @@
 }
 .publication_filters div.search input {
     width: 100%;
-    max-width: 40rem;
+    max-width: 32rem;
+}
+.publication_filters div.search div.search_hint {
+    display: inline-block;
+    font-size: 90%;
+    font-style: italic;
 }
 
 article.publication {
