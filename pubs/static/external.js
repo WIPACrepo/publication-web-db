@@ -60,7 +60,7 @@ const pub_html = `
     <hr>
     <div v-if="typing">{{ typing }}</div>
     <div v-else>
-      <pub v-for="pub in pubs" v-bind="pub" :project_labels="projects"></pub>
+      <pub v-for="pub in pubs" v-bind="pub" :project_labels="projects" :filters="filters"></pub>
       <hr>
       <div v-if="page > 1 || count >= limit" class="publication_pagination">
         <a v-for="p in page_links" @click="setPage(p)" :aria-label="'Page '+p" :class="{publication_current: p == page, publication_numeric: !isNaN(p)}">{{ p }}</a>
@@ -150,7 +150,8 @@ async function Pubs(id, baseurl = 'https://publications.icecube.aq', filters = {
       downloads: Array,
       projects: Array,
       sites: String,
-      project_labels: Object
+      project_labels: Object,
+      filters: Object
     },
     computed: {
         day_month_year: function() {
@@ -184,7 +185,7 @@ async function Pubs(id, baseurl = 'https://publications.icecube.aq', filters = {
     <span class="downloads" v-if="downloads">Download:
       <span class="download" v-for="link in downloads"><a :href="link" target="_blank">{{ getDomain(link) }}</a></span>
     </span>
-    <span class="projects" v-if="projects">Project:
+    <span class="projects" v-if="projects && !filters.hide_projects">Project:
       <span class="project" v-for="project in projects">{{ project_labels[project] }}</span>
     </span>
   </div>
