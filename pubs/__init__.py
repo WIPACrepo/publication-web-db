@@ -5,8 +5,8 @@
 # is zero for an official release, positive for a development branch,
 # or negative for a release candidate or beta (after the base version
 # number has been incremented)
-__version__ = '0.1.0'
-version_info = (0, 1, 0, 0)
+__version__ = '1.1.0'
+version_info = (1, 1, 0, 0)
 
 PUBLICATION_TYPES = {
     "journal": "Journal Article",
@@ -17,6 +17,7 @@ PUBLICATION_TYPES = {
 
 PROJECTS = {
     'icecube': 'IceCube',
+    'icecube-gen2': 'IceCube-Gen2',
     'ara': 'ARA',
     'bigdata': 'BigData',
     'cta': 'CTA',
@@ -27,6 +28,7 @@ PROJECTS = {
 
 SITES = {
     'icecube': 'IceCube',
+    'icecube-gen2': 'IceCube-Gen2',
     'ara': 'ARA',
     'wipac': 'WIPAC',
 }
