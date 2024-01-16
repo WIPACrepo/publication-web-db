@@ -43,6 +43,9 @@
   <div><span class="type">({{ PUBLICATION_TYPES[pub['type']] }})</span>
   <span class="citation">{{ pub['citation'] }}</span>
   <span class="date">{{ date_format(pub['date']) }}</span></div>
+  {% if pub.get('abstract', '') %}
+  <div class="abstract_div">Abstract: <span class="abstract">{{ pub['abstract'] }}</span></div>
+  {% end %}
   <div>
     {% if pub['downloads'] %}
     <span class="downloads">Download:

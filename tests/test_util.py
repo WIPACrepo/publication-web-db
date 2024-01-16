@@ -1,6 +1,6 @@
 import asyncio
 
-from rest_tools.server import from_environment
+from wipac_dev_tools import from_environment
 import pytest
 from bson.objectid import ObjectId
 
@@ -41,13 +41,14 @@ async def test_add_pub(mocker, sites):
         'authors': ['auth1', 'auth2'],
         'type': 'journal',
         'citation': 'citation',
+        'abstract': '',
         'date': '2020-11-03T00:00:00',
         'downloads': ['down1', 'down2'],
         'projects': ['icecube', 'hawc'],
         'sites': sites if sites else []
     }
     await pubs.utils.add_pub(db, title=args['title'], authors=args['authors'], pub_type=args['type'],
-            citation=args['citation'], date=args['date'], downloads=args['downloads'],
+            abstract=args['abstract'], citation=args['citation'], date=args['date'], downloads=args['downloads'],
             projects=args['projects'], sites=sites)
 
     db.publications.insert_one.assert_called_once_with(args)
@@ -55,29 +56,31 @@ async def test_add_pub(mocker, sites):
 @pytest.mark.parametrize('title', ['title', 123])
 @pytest.mark.parametrize('authors', [['auth1', 'auth2'], [12], 'author'])
 @pytest.mark.parametrize('pub_type', ['journal', 'foo', 12])
+@pytest.mark.parametrize('abstract', [12])
 @pytest.mark.parametrize('citation', ['citation', 12])
 @pytest.mark.parametrize('date', ['2020-11-03T00:00:00', '2020-1111', 2020])
 @pytest.mark.parametrize('downloads', [['down1', 'down2'], [12], 'down'])
 @pytest.mark.parametrize('projects', [['icecube','hawc'], [12], 12])
 @pytest.mark.parametrize('sites', [[12], 12])
 @pytest.mark.asyncio
-async def test_add_pub_err(mocker, title, authors, pub_type, citation, date, downloads, projects, sites):
+async def test_add_pub_err(mocker, title, authors, pub_type, abstract, citation, date, downloads, projects, sites):
     db = mocker.AsyncMock()
 
     with pytest.raises(Exception):
-        await pubs.utils.add_pub(db, title=title, authors=authors, pub_type=pub_type,
+        await pubs.utils.add_pub(db, title=title, authors=authors, pub_type=pub_type, abstract=abstract,
                 citation=citation, date=date, downloads=downloads, projects=projects, sites=sites)
 
 @pytest.mark.parametrize('title', ['title', None])
 @pytest.mark.parametrize('authors', [['auth1', 'auth2'], None])
 @pytest.mark.parametrize('pub_type', ['journal', None])
+@pytest.mark.parametrize('abstract', ['This is an abstract', '', None])
 @pytest.mark.parametrize('citation', ['citation', None])
 @pytest.mark.parametrize('date', ['2020-11-03T00:00:00', None])
 @pytest.mark.parametrize('downloads', [['down1', 'down2'], None])
 @pytest.mark.parametrize('projects', [['icecube','hawc'], None])
 @pytest.mark.parametrize('sites', [['icecube', 'wipac'], None])
 @pytest.mark.asyncio
-async def test_edit_pub(mocker, title, authors, pub_type, citation, date, downloads, projects, sites):
+async def test_edit_pub(mocker, title, authors, pub_type, abstract, citation, date, downloads, projects, sites):
     mongo_id = ObjectId()
     args = {}
     if title:
@@ -86,6 +89,8 @@ async def test_edit_pub(mocker, title, authors, pub_type, citation, date, downlo
         args['authors'] = authors
     if pub_type:
         args['type'] = pub_type
+    if abstract:
+        args['abstract'] = abstract
     if citation:
         args['citation'] = citation
     if date:
@@ -98,7 +103,7 @@ async def test_edit_pub(mocker, title, authors, pub_type, citation, date, downlo
         args['sites'] = sites
 
     db = mocker.AsyncMock()
-    await pubs.utils.edit_pub(db, str(mongo_id), title=title, authors=authors, pub_type=pub_type,
+    await pubs.utils.edit_pub(db, str(mongo_id), title=title, authors=authors, pub_type=pub_type, abstract=abstract,
             citation=citation, date=date, downloads=downloads, projects=projects, sites=sites)
 
     db.publications.update_one.assert_called_once_with({'_id': mongo_id}, {'$set': args})
@@ -106,18 +111,19 @@ async def test_edit_pub(mocker, title, authors, pub_type, citation, date, downlo
 @pytest.mark.parametrize('title', [123, None])
 @pytest.mark.parametrize('authors', [[12], 'author', None])
 @pytest.mark.parametrize('pub_type', ['foo', 12, None])
+@pytest.mark.parametrize('abstract', [12, None])
 @pytest.mark.parametrize('citation', [12, None])
 @pytest.mark.parametrize('date', ['2020-1111', 2020, None])
 @pytest.mark.parametrize('downloads', [[12], 'down', None])
 @pytest.mark.parametrize('projects', [[12], 12, None])
 @pytest.mark.parametrize('sites', [[12], 12])
 @pytest.mark.asyncio
-async def test_edit_pub_err(mocker, title, authors, pub_type, citation, date, downloads, projects, sites):
+async def test_edit_pub_err(mocker, title, authors, pub_type, abstract, citation, date, downloads, projects, sites):
     mongo_id = ObjectId()
     db = mocker.AsyncMock()
 
     with pytest.raises(Exception):
-        await pubs.utils.edit_pub(db, str(mongo_id), title=title, authors=authors, pub_type=pub_type,
+        await pubs.utils.edit_pub(db, str(mongo_id), title=title, authors=authors, pub_type=pub_type, abstract=abstract,
                 citation=citation, date=date, downloads=downloads, projects=projects, sites=sites)
 
 @pytest.mark.asyncio
@@ -131,11 +137,19 @@ async def test_import_file_json(mocker):
 "date":"2020-11-03T00:00:00","downloads":["baz"],"projects":["icecube"],"sites":["icecube","wipac"]}]'''
     await pubs.utils.try_import_file(db, json_data)
 
+    json_data = '''[{"title":"foo","authors":["bar"],"type":"journal","citation":"cite","abstract":"This is an abstract",
+"date":"2020-11-03T00:00:00","downloads":["baz"],"projects":["icecube"],"sites":["icecube","wipac"]}]'''
+    await pubs.utils.try_import_file(db, json_data)
+
 @pytest.mark.asyncio
 async def test_import_file_csv(mocker):
     db = mocker.AsyncMock()
     csv_data = '''title,authors,type,citation,date,downloads,projects,sites
 foo,bar,journal,cite,2020-11-03T00:00:00,baz,icecube,"icecube,wipac"'''
+    await pubs.utils.try_import_file(db, csv_data)
+    
+    csv_data = '''title,authors,type,abstract,citation,date,downloads,projects,sites
+foo,bar,journal,"this is an abstract",cite,2020-11-03T00:00:00,baz,icecube,"icecube,wipac"'''
     await pubs.utils.try_import_file(db, csv_data)
 
 @pytest.mark.asyncio

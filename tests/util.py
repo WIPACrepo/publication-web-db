@@ -4,7 +4,8 @@ import socket
 import os
 
 import pytest
-from rest_tools.server import from_environment
+import pytest_asyncio
+from wipac_dev_tools import from_environment
 import motor.motor_asyncio
 
 from pubs.server import create_server
@@ -21,7 +22,7 @@ def port():
     s.close()
     return ephemeral_port
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def mongo_client(monkeypatch):
     if 'DB_URL' not in os.environ:
         monkeypatch.setenv('DB_URL', 'mongodb://localhost/pub_db_test')
@@ -41,12 +42,12 @@ async def mongo_client(monkeypatch):
     finally:
         await ret.publications.drop()
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def server(monkeypatch, port, mongo_client):
     monkeypatch.setenv('DEBUG', 'True')
     monkeypatch.setenv('PORT', str(port))
 
     s = create_server()
 
-    yield mongo_client, f'http://localhost:{port}'
+    yield (mongo_client, f'http://localhost:{port}')
     await s.stop()

@@ -22,6 +22,7 @@
       <option value="{{ t }}">{{ PUBLICATION_TYPES[t] }}</option>
       {% end %}
     </select></div>
+    <div class="input"><label for="new_abstract">Abstract: </label><textarea name="new_abstract"></textarea></div>
     <div class="input"><label for="new_citation">Citation:</label><textarea name="new_citation"></textarea></div>
     <div class="input"><label for="new_downloads">Download links:</label><textarea name="new_downloads"></textarea></div>
     <div class="input"><label for="new_projects">Project: </label><div class="projects_box">
@@ -101,6 +102,9 @@
   <div><span class="type">({{ PUBLICATION_TYPES[pub['type']] }})</span>
   <span class="citation">{{ pub['citation'] }}</span>
   <span class="date">{{ date_format(pub['date']) }}</span></div>
+  {% if pub.get('abstract', '') %}
+  <div class="abstract_div">Abstract: <span class="abstract">{{ pub['abstract'] }}</span></div>
+  {% end %}
   <div>
     {% if pub['downloads'] %}
     <span class="downloads">Download:
@@ -189,8 +193,11 @@ $('button.edit').click(function(){
   }
   const pub_id = pub.find('input[name="pub_id"]').val();
 
+  const abstract_text = Array.from(pub.find('.abstract').map(function(){return $(this).text()})).join('');
+
   console.log('title:'+title);
   console.log('authors:');console.log(authors);
+  console.log('abstract:');console.log(abstract_text);
   console.log('pub_type:'+pub_type);
   console.log('citation:'+citation);
   console.log('date:'+date);
@@ -203,6 +210,7 @@ $('button.edit').click(function(){
   $('.new textarea[name="new_authors"]').val(authors.join('\n'));
   $('.new input[name="new_date"]').val(date);
   $('.new select[name="new_type"]').val(pub_type);
+  $('.new textarea[name="new_abstract"]').val(abstract_text);
   $('.new textarea[name="new_citation"]').val(citation);
   $('.new textarea[name="new_downloads"]').val(downloads.join('\n'));
   $('.new input[name="new_projects"]').val(projects);
