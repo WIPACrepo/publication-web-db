@@ -216,6 +216,7 @@ class Manage(BaseHandler):
                     doc = {
                         'title': self.get_argument('new_title').strip(),
                         'authors': [a.strip() for a in self.get_argument('new_authors').split('\n') if a.strip()],
+                        'abstract': self.get_argument('new_abstract', ''),
                         'date': self.get_argument('new_date'),
                         'pub_type': self.get_argument('new_type'),
                         'citation': self.get_argument('new_citation').strip(),
@@ -229,6 +230,7 @@ class Manage(BaseHandler):
                     doc = {
                         'title': self.get_argument('new_title').strip(),
                         'authors': [a.strip() for a in self.get_argument('new_authors').split('\n') if a.strip()],
+                        'abstract': self.get_argument('new_abstract', ''),
                         'date': self.get_argument('new_date'),
                         'pub_type': self.get_argument('new_type'),
                         'citation': self.get_argument('new_citation').strip(),
@@ -320,7 +322,7 @@ def create_server():
     create_indexes(db_url, db_name)
 
     users = {v.split(':')[0]: v.split(':')[1] for v in config['BASIC_AUTH'].split(',') if v}
-    logging.info(f'BASIC_AUTH users: {users.keys()}')
+    logging.info(f'BASIC_AUTH users: {list(users.keys())}')
 
     main_args = {
         'debug': config['DEBUG'],

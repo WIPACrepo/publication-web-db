@@ -144,6 +144,7 @@ async function Pubs(id, baseurl = 'https://publications.icecube.aq', filters = {
     props: {
       title: String,
       authors: String,
+      abstract: String,
       type: String,
       citation: String,
       date: String,
@@ -181,6 +182,7 @@ async function Pubs(id, baseurl = 'https://publications.icecube.aq', filters = {
   <div><span class="type">({{ type }})</span>
   <span class="citation">{{ citation }}</span>
   <span v-if="show_date" class="date">{{ day_month_year }}</span></div>
+  <div class="abstract_div" v-if="abstract">Abstract: <span class="abstract">{{ abstract }}</span></div>
   <div>
     <span class="downloads" v-if="downloads">Download:
       <span class="download" v-for="link in downloads"><a :href="link" target="_blank">{{ getDomain(link) }}</a></span>

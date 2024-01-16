@@ -37,12 +37,13 @@ def create_indexes(db_url, db_name, background=True):
                                      weights={'title': 10, 'authors': 5, 'citation': 1},
                                      name='text_index', background=background)
 
-def validate(title, authors, pub_type, citation, date, downloads, projects, sites):
+def validate(title, authors, pub_type, abstract, citation, date, downloads, projects, sites):
     assert isinstance(title, str)
     assert isinstance(authors, list)
     for a in authors:
         assert isinstance(a, str)
     assert pub_type in PUBLICATION_TYPES
+    assert isinstance(abstract, str)
     assert isinstance(citation, str)
     assert isinstance(date, str)
     date_format(date)
@@ -56,23 +57,24 @@ def validate(title, authors, pub_type, citation, date, downloads, projects, site
     for s in sites:
         assert s in SITES
 
-async def add_pub(db, title, authors, pub_type, citation, date, downloads, projects, sites=None):
+async def add_pub(db, title, authors, pub_type, abstract, citation, date, downloads, projects, sites=None):
     if not sites:
         sites = []
-    validate(title, authors, pub_type, citation, date, downloads, projects, sites)
+    validate(title, authors, pub_type, abstract, citation, date, downloads, projects, sites)
     data = {
         "title": title,
         "authors": authors,
         "type": pub_type,
         "citation": citation,
         "date": date,
+        "abstract": abstract,
         "downloads": downloads,
         "projects": projects,
         "sites": sites,
     }
     await db.publications.insert_one(data)
 
-async def edit_pub(db, mongo_id, title=None, authors=None, pub_type=None, citation=None, date=None, downloads=None, projects=None, sites=None):
+async def edit_pub(db, mongo_id, title=None, authors=None, pub_type=None, abstract=None, citation=None, date=None, downloads=None, projects=None, sites=None):
     match = {'_id': ObjectId(mongo_id)}
     update = {}
     if title:
@@ -86,6 +88,9 @@ async def edit_pub(db, mongo_id, title=None, authors=None, pub_type=None, citati
     if pub_type:
         assert pub_type in PUBLICATION_TYPES
         update['type'] = pub_type
+    if abstract:
+        assert isinstance(abstract, str)
+        update['abstract'] = abstract
     if citation:
         assert isinstance(citation, str)
         update['citation'] = citation
@@ -139,7 +144,7 @@ async def try_import_file(db, data):
         if isinstance(p['authors'], str):
             p['authors'] = [p['authors']]
         try:
-            validate(p['title'], p['authors'], p['type'], p['citation'], p['date'], p['downloads'], p['projects'], p['sites'])
+            validate(p['title'], p['authors'], p['type'], p.get('abstract', ''), p['citation'], p['date'], p['downloads'], p['projects'], p['sites'])
         except AssertionError:
             raise Exception(f'Error validating pub with title {p["title"][:100]}')
 
