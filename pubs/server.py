@@ -13,7 +13,8 @@ from io import StringIO
 import itertools
 
 from tornado.web import RequestHandler, HTTPError
-from rest_tools.server import RestServer, from_environment, catch_error
+from rest_tools.server import RestServer, catch_error
+from wipac_dev_tools import from_environment
 import motor.motor_asyncio
 import pymongo
 from bson.objectid import ObjectId
