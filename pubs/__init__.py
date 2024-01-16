@@ -13,7 +13,7 @@ PUBLICATION_TYPES = {
     "proceeding": "Conference Proceeding",
     "thesis": "Thesis",
     "other": "Other",
-    "internal": "Internal Reports",
+    "internal": "Internal Report",
 }
 
 PROJECTS = {
