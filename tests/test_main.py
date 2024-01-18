@@ -241,3 +241,29 @@ async def test_authors(server):
 
     pubs = await get_pubs(url, params={'authors': 'auth4'})
     assert len(pubs) == 0
+
+
+@pytest.mark.asyncio
+async def test_csv(server):
+    db, url = server
+
+    await add_pub(db, title='Test Title1', authors=['auth1'], abstract='',
+                  pub_type="journal", citation="TestJournal", date=nowstr(),
+                  downloads=[], projects=['icecube'])
+
+    await add_pub(db, title='Test Title2', authors=['auth2'], abstract='',
+                  pub_type="proceeding", citation="TestJournal", date=nowstr(),
+                  downloads=[], projects=['icecube'])
+
+    await add_pub(db, title='Test Title3', authors=['auth1', 'auth3'], abstract='',
+                  pub_type="thesis", citation="TestJournal", date=nowstr(),
+                  downloads=[], projects=['icecube'])
+
+    await add_pub(db, title='Test Title4', authors=['auth1', 'auth4'], abstract='the abstract',
+                  pub_type="internal", citation="TestReport", date=nowstr(),
+                  downloads=[], projects=['icecube'])
+
+    s = AsyncSession(retries=0, backoff_factor=1)
+    r = await asyncio.wrap_future(s.get(url+'/csv'))
+    r.raise_for_status()
+    

@@ -76,30 +76,30 @@ async def test_add_pub_err(mocker, title, authors, pub_type, abstract, citation,
 @pytest.mark.parametrize('abstract', ['This is an abstract', '', None])
 @pytest.mark.parametrize('citation', ['citation', None])
 @pytest.mark.parametrize('date', ['2020-11-03T00:00:00', None])
-@pytest.mark.parametrize('downloads', [['down1', 'down2'], None])
-@pytest.mark.parametrize('projects', [['icecube','hawc'], None])
-@pytest.mark.parametrize('sites', [['icecube', 'wipac'], None])
+@pytest.mark.parametrize('downloads', [['down1', 'down2'], [], None])
+@pytest.mark.parametrize('projects', [['icecube','hawc'], [], None])
+@pytest.mark.parametrize('sites', [['icecube', 'wipac'], [], None])
 @pytest.mark.asyncio
 async def test_edit_pub(mocker, title, authors, pub_type, abstract, citation, date, downloads, projects, sites):
     mongo_id = ObjectId()
     args = {}
-    if title:
+    if title is not None:
         args['title'] = title
-    if authors:
+    if authors is not None:
         args['authors'] = authors
-    if pub_type:
+    if pub_type is not None:
         args['type'] = pub_type
-    if abstract:
+    if abstract is not None:
         args['abstract'] = abstract
-    if citation:
+    if citation is not None:
         args['citation'] = citation
-    if date:
+    if date is not None:
         args['date'] = date
-    if downloads:
+    if downloads is not None:
         args['downloads'] = downloads
-    if projects:
+    if projects is not None:
         args['projects'] = projects
-    if sites:
+    if sites is not None:
         args['sites'] = sites
 
     db = mocker.AsyncMock()

@@ -33,3 +33,16 @@ SITES = {
     'ara': 'ARA',
     'wipac': 'WIPAC',
 }
+
+FIELDS = [
+    '_id',
+    'title',
+    'authors',
+    'type',
+    'citation',
+    'date',
+    'abstract',
+    'downloads',
+    'projects',
+    'sites',
+]

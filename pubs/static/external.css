@@ -56,6 +56,14 @@ article.publication {
     content: "and";
     padding: 0 .4rem;
 }
+.publication .abstract_div button {
+    line-height: .9rem;
+}
+.publication .abstract {
+    padding: .5rem;
+    margin: .5rem;
+    border: 1px solid #ccc;
+}
 .publication .downloads .download:not(:first-child)::before {
     content: "|";
     padding: 0 .4rem;

@@ -20,7 +20,7 @@ import pymongo
 from bson.objectid import ObjectId
 
 from . import __version__ as version
-from . import PUBLICATION_TYPES, PROJECTS, SITES
+from . import PUBLICATION_TYPES, PROJECTS, SITES, FIELDS
 from .utils import create_indexes, date_format, add_pub, edit_pub, try_import_file
 
 logger = logging.getLogger('server')
@@ -182,12 +182,14 @@ class CSV(BaseHandler):
         pubs = await self.get_pubs()
 
         f = StringIO()
-        writer = csv.DictWriter(f, fieldnames=list(pubs['publications'][0].keys()))
+        writer = csv.DictWriter(f, fieldnames=FIELDS)
         writer.writeheader()
         for p in pubs['publications']:
             data = {}
-            for k in p:
-                if isinstance(p[k], list):
+            for k in FIELDS:
+                if k not in p:
+                    data[k] = ''
+                elif isinstance(p[k], list):
                     data[k] = ','.join(p[k])
                 else:
                     data[k] = p[k]
