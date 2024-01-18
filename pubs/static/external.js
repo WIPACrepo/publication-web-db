@@ -141,6 +141,11 @@ async function Pubs(id, baseurl = 'https://publications.icecube.aq', filters = {
   let pubsCount = await pubs_count_fut;
 
   Vue.component('pub', {
+    data: function() {
+      return {
+        show_abstract: false
+      }
+    },
     props: {
       title: String,
       authors: String,
@@ -182,14 +187,18 @@ async function Pubs(id, baseurl = 'https://publications.icecube.aq', filters = {
   <div><span class="type">({{ type }})</span>
   <span class="citation">{{ citation }}</span>
   <span v-if="show_date" class="date">{{ day_month_year }}</span></div>
-  <div class="abstract_div" v-if="abstract">Abstract: <span class="abstract">{{ abstract }}</span></div>
   <div>
-    <span class="downloads" v-if="downloads">Download:
+    <span class="downloads" v-if="downloads.length">Download:
       <span class="download" v-for="link in downloads"><a :href="link" target="_blank">{{ getDomain(link) }}</a></span>
     </span>
-    <span class="projects" v-if="projects && !filters.hide_projects">Project:
+    <span class="projects" v-if="projects.length && !filters.hide_projects">Project:
       <span class="project" v-for="project in projects">{{ project_labels[project] }}</span>
     </span>
+  </div>
+  <div class="abstract_div" v-if="abstract">Abstract:
+    <button v-if="show_abstract" v-on:click="show_abstract = false">Hide</button>
+    <button v-else v-on:click="show_abstract = true">Show</button>
+    <div class="abstract" v-if="show_abstract">{{ abstract }}</div>
   </div>
 </article>`
   });
