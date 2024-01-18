@@ -77,38 +77,38 @@ async def add_pub(db, title, authors, pub_type, abstract, citation, date, downlo
 async def edit_pub(db, mongo_id, title=None, authors=None, pub_type=None, abstract=None, citation=None, date=None, downloads=None, projects=None, sites=None):
     match = {'_id': ObjectId(mongo_id)}
     update = {}
-    if title:
+    if title is not None:
         assert isinstance(title, str)
         update['title'] = title
-    if authors:
+    if authors is not None:
         assert isinstance(authors, list)
         for a in authors:
             assert isinstance(a, str)
         update['authors'] = authors
-    if pub_type:
+    if pub_type is not None:
         assert pub_type in PUBLICATION_TYPES
         update['type'] = pub_type
-    if abstract:
+    if abstract is not None:
         assert isinstance(abstract, str)
         update['abstract'] = abstract
-    if citation:
+    if citation is not None:
         assert isinstance(citation, str)
         update['citation'] = citation
-    if date:
+    if date is not None:
         assert isinstance(date, str)
         date_format(date)
         update['date'] = date
-    if downloads:
+    if downloads is not None:
         assert isinstance(downloads, list)
         for d in downloads:
             assert isinstance(d, str)
         update['downloads'] = downloads
-    if projects:
+    if projects is not None:
         assert isinstance(projects, list)
         for p in projects:
             assert p in PROJECTS
         update['projects'] = projects
-    if sites:
+    if sites is not None:
         assert isinstance(sites, list)
         for s in sites:
             assert s in SITES
