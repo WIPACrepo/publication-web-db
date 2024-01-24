@@ -56,9 +56,32 @@
     </span>
   </div>
   {% if pub.get('abstract', '') %}
-  <div class="abstract_div">Abstract: <div class="abstract">{{ pub['abstract'] }}</div></div>
+  <div class="abstract_div">Abstract:
+    <button>Show</button>
+    <div class="abstract">{{ pub['abstract'] }}</div>
+  </div>
   {% end %}
 </article>
 {% end %}
 </div>
+{% end %}
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.7.1.slim.min.js" integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8=" crossorigin="anonymous"></script>
+<script>
+$( document ).ready(function() {
+  $(".abstract_div").each(function(i){
+    let ab = $(this).find('.abstract');
+    ab.hide();
+    $(this).find('button').on('click', function(){
+      ab.toggle();
+      if ($(this).text() == 'Show') {
+        $(this).text('Hide');
+      } else {
+        $(this).text('Show');
+      }
+    });
+  });
+});
+</script>
 {% end %}
