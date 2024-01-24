@@ -57,7 +57,7 @@
   </div>
   {% if pub.get('abstract', '') %}
   <div class="abstract_div">Abstract:
-    <button>Show</button><button style="display:none">Hide</button>
+    <button>Show</button>
     <div class="abstract">{{ pub['abstract'] }}</div>
   </div>
   {% end %}
@@ -75,7 +75,11 @@ $( document ).ready(function() {
     ab.hide();
     $(this).find('button').on('click', function(){
       ab.toggle();
-      this.toggle();
+      if ($(this).text() == 'Show') {
+        $(this).text('Hide');
+      } else {
+        $(this).text('Show');
+      }
     });
   });
 });
