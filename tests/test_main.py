@@ -326,5 +326,5 @@ async def test_csv_unsorted(server):
     lines = r.text.split('\n')
     assert 'Test Title1' in lines[1]
     assert 'Test Title2' in lines[2]
-    assert 'Test Title3' in lines[2]
-    assert 'Test Title4' in lines[2]
+    assert 'Test Title3' in lines[3]
+    assert 'Test Title4' in lines[4]
