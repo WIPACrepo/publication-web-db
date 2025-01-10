@@ -125,7 +125,7 @@ class BaseHandler(RequestHandler):
         match, _ = self.args_to_match_query()
         return await self.db.publications.count_documents(match)
 
-    async def get_pubs(self, mongoid=False):
+    async def get_pubs(self, mongoid=False, sortby='date'):
         match, args = self.args_to_match_query()
 
         kwargs = {}
@@ -139,7 +139,10 @@ class BaseHandler(RequestHandler):
 
         pubs = []
         i = -1
-        async for row in self.db.publications.find(match, **kwargs).sort('date', pymongo.DESCENDING):
+        cursor = self.db.publications.find(match, **kwargs)
+        if sortby:
+            cursor = cursor.sort(sortby, pymongo.DESCENDING)
+        async for row in sortby:
             i += 1
             if mongoid:
                 row['_id'] = str(row['_id'])
@@ -179,7 +182,8 @@ class Main(BaseHandler):
 
 class CSV(BaseHandler):
     async def get(self):
-        pubs = await self.get_pubs()
+        sortby = self.get_argument('sort', 'date')
+        pubs = await self.get_pubs(sortby=sortby)
 
         f = StringIO()
         writer = csv.DictWriter(f, fieldnames=FIELDS)
