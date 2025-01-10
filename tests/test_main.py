@@ -321,6 +321,6 @@ async def test_csv_unsorted(server):
     r = await asyncio.wrap_future(s.get(url+'/csv?sort='))
     r.raise_for_status()
 
-    lines = r.text.split('\n')
+    lines = [x for x in r.text.split('\n') if x.strip()]
     assert 'Test Title1' in lines[-1]
     assert 'Test Title4' in lines[-2]
