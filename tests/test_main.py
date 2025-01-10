@@ -266,4 +266,65 @@ async def test_csv(server):
     s = AsyncSession(retries=0, backoff_factor=1)
     r = await asyncio.wrap_future(s.get(url+'/csv'))
     r.raise_for_status()
-    
+
+
+@pytest.mark.asyncio
+async def test_csv_sorted(server):
+    db, url = server
+
+    await add_pub(db, title='Test Title1', authors=['auth1'], abstract='',
+                  pub_type="journal", citation="TestJournal", date='2024-01-01T01:00:00',
+                  downloads=[], projects=['icecube'])
+
+    await add_pub(db, title='Test Title2', authors=['auth2'], abstract='',
+                  pub_type="proceeding", citation="TestJournal", date='2024-02-01T01:00:00',
+                  downloads=[], projects=['icecube'])
+
+    await add_pub(db, title='Test Title3', authors=['auth1', 'auth3'], abstract='',
+                  pub_type="thesis", citation="TestJournal", date='2024-03-01T01:00:00',
+                  downloads=[], projects=['icecube'])
+
+    await add_pub(db, title='Test Title4', authors=['auth1', 'auth4'], abstract='the abstract',
+                  pub_type="internal", citation="TestReport", date='2023-01-01T01:00:00',
+                  downloads=[], projects=['icecube'])
+
+    s = AsyncSession(retries=0, backoff_factor=1)
+    r = await asyncio.wrap_future(s.get(url+'/csv'))
+    r.raise_for_status()
+
+    lines = r.text.split('\n')
+    assert 'Test Title3' in lines[1]
+    assert 'Test Title2' in lines[2]
+    assert 'Test Title1' in lines[3]
+    assert 'Test Title4' in lines[4]
+
+
+@pytest.mark.asyncio
+async def test_csv_unsorted(server):
+    db, url = server
+
+    await add_pub(db, title='Test Title1', authors=['auth1'], abstract='',
+                  pub_type="journal", citation="TestJournal", date='2024-01-01T01:00:00',
+                  downloads=[], projects=['icecube'])
+
+    await add_pub(db, title='Test Title2', authors=['auth2'], abstract='',
+                  pub_type="proceeding", citation="TestJournal", date='2024-02-01T01:00:00',
+                  downloads=[], projects=['icecube'])
+
+    await add_pub(db, title='Test Title3', authors=['auth1', 'auth3'], abstract='',
+                  pub_type="thesis", citation="TestJournal", date='2024-03-01T01:00:00',
+                  downloads=[], projects=['icecube'])
+
+    await add_pub(db, title='Test Title4', authors=['auth1', 'auth4'], abstract='the abstract',
+                  pub_type="internal", citation="TestReport", date='2023-01-01T01:00:00',
+                  downloads=[], projects=['icecube'])
+
+    s = AsyncSession(retries=0, backoff_factor=1)
+    r = await asyncio.wrap_future(s.get(url+'/csv?sort='))
+    r.raise_for_status()
+
+    lines = r.text.split('\n')
+    assert 'Test Title1' in lines[1]
+    assert 'Test Title2' in lines[2]
+    assert 'Test Title3' in lines[3]
+    assert 'Test Title4' in lines[4]
