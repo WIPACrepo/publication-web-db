@@ -142,7 +142,7 @@ class BaseHandler(RequestHandler):
         cursor = self.db.publications.find(match, **kwargs)
         if sortby:
             cursor = cursor.sort(sortby, pymongo.DESCENDING)
-        async for row in sortby:
+        async for row in cursor:
             i += 1
             if mongoid:
                 row['_id'] = str(row['_id'])
