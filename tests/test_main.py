@@ -293,8 +293,10 @@ async def test_csv_sorted(server):
     r.raise_for_status()
 
     lines = r.text.split('\n')
-    assert 'Test Title4' in lines[-1]
-    assert 'Test Title1' in lines[-2]
+    assert 'Test Title3' in lines[1]
+    assert 'Test Title2' in lines[2]
+    assert 'Test Title1' in lines[3]
+    assert 'Test Title4' in lines[4]
 
 
 @pytest.mark.asyncio
@@ -321,6 +323,8 @@ async def test_csv_unsorted(server):
     r = await asyncio.wrap_future(s.get(url+'/csv?sort='))
     r.raise_for_status()
 
-    lines = [x for x in r.text.split('\n') if x.strip()]
-    assert 'Test Title1' in lines[-1]
-    assert 'Test Title4' in lines[-2]
+    lines = r.text.split('\n')
+    assert 'Test Title1' in lines[1]
+    assert 'Test Title2' in lines[2]
+    assert 'Test Title3' in lines[2]
+    assert 'Test Title4' in lines[2]
