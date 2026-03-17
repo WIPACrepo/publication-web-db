@@ -21,7 +21,7 @@ PROJECTS = {
     'icecube-gen2': 'IceCube-Gen2',
     'ara': 'ARA',
     'bigdata': 'BigData',
-    'cta': 'CTA',
+    'cta': 'CTAO',
     'dm-ice': 'DM-Ice',
     'hawc': 'HAWC',
     'other': 'Other',
