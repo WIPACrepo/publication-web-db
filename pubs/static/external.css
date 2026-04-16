@@ -119,7 +119,6 @@ article.publication {
     padding: 0 .1rem;
     margin: .2rem;
     text-transform: capitalize;
-    color: #4285f4;
     cursor: pointer;
 }
 .publication_list .publication_pagination a:hover {
