@@ -26,23 +26,31 @@ const pub_html = `
   <div class="input search">
     <label for="search">Text search: </label>
     <div>
-      <input type="text" name="search" v-model.trim="filters.search" />
+      <input type="text" id="search" name="search" v-model.trim="filters.search" />
       <div class="search_hint">To search for an exact phrase, enclose term in quotation marks.</div>
     </div>
   </div>
   <div class="col">
-    <div class="input vcenter"><label for="start_date">Start date: </label><input type="date" name="start_date" v-model="filters.start_date" /></div>
-    <div class="input vcenter"><label for="end_date">End date: </label><input type="date" name="end_date" v-model="filters.end_date" /></div>
-    <div class="input"><label for="type">Type: </label>
-      <radio class="type_box" type="type" :name_vals="publication_types" v-model="filters.type"></radio>
+    <div class="input vcenter"><label for="start_date">Start date: </label><input type="date" id="start_date" name="start_date" v-model="filters.start_date" /></div>
+    <div class="input vcenter"><label for="end_date">End date: </label><input type="date" id="end_date" name="end_date" v-model="filters.end_date" /></div>
+    <div class="input">
+      <fieldset>
+        <legend>Type: </legend>
+        <radio class="type_box" type="type" id="type" name="type" :name_vals="publication_types" v-model="filters.type"></radio>
+      </fieldset>
     </div>
   </div><div class="col" v-if="!filters.hide_projects">
-    <div class="input"><label for="projects">Project: </label><div class="projects_box">
-      <div class="checkbox" v-for="p in  Object.keys(projects)">
-        <input type="checkbox" name="projects" :id="'projects_'+p" :value="p" v-model="filters.projects" />
-        <label :for="'projects_'+p">{{ projects[p] }}</label>
-      </div>
-    </div></div>
+    <div class="input">
+      <fieldset>
+        <legend>Project:</legend>
+        <div class="projects_box">
+          <div class="checkbox" v-for="p in  Object.keys(projects)">
+            <input type="checkbox" name="projects" :id="'projects_'+p" :value="p" v-model="filters.projects" />
+            <label :for="'projects_'+p">{{ projects[p] }}</label>
+          </div>
+        </div>
+      </fieldset>
+    </div>
   </div>
 </form></div>
 <div class="publication_list">

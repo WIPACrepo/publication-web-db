@@ -6,41 +6,55 @@
 <div class="error_box">{{ message }}</div>
 {% end %}
 <div class="new">
-  <h2>New Publication</h2>
-  <form action="{{ request.path }}" method="post" enctype="multipart/form-data">
+  <h2 id="new-pub">New Publication</h2>
+  <form action="{{ request.path }}" method="post" enctype="multipart/form-data" aria-label="Bulk upload">
     {% module xsrf_form_html() %}
     <input type="hidden" name="action" value="import" />
-    <div class="input vcenter import_file"><label for="import_file">Import many from file:</label><input type="file" name="import_file" /><input type="submit" value="Upload" /></div>
+    <div class="input vcenter import_file"><label for="import_file">Import many from file:</label><input type="file" id="import_file" name="import_file" /><input type="submit" value="Upload" /></div>
   </form>
-  <form action="{{ request.path }}" method="post">
+  <form action="{{ request.path }}" method="post" aria-labelledby="new-pub">
     <input type="hidden" name="action" value="new" />
-    <div class="input vcenter"><label for="new_title">Title: </label><textarea name="new_title"></textarea></div>
-    <div class="input"><label for="new_authors">Authors: </label><textarea name="new_authors"></textarea></div>
-    <div class="input vcenter"><label for="new_date">Date of publication: </label><input type="date" name="new_date" /></div>
-    <div class="input vcenter"><label for="new_type">Publication Type: </label><select name="new_type">
-      {% for t in PUBLICATION_TYPES %}
-      <option value="{{ t }}">{{ PUBLICATION_TYPES[t] }}</option>
-      {% end %}
-    </select></div>
-    <div class="input"><label for="new_abstract">Abstract: </label><textarea name="new_abstract"></textarea></div>
-    <div class="input"><label for="new_citation">Citation:</label><textarea name="new_citation"></textarea></div>
-    <div class="input"><label for="new_downloads">Download links:</label><textarea name="new_downloads"></textarea></div>
-    <div class="input"><label for="new_projects">Project: </label><div class="projects_box">
-      {% for p in PROJECTS %}
-      <div class="checkbox">
-        <input type="checkbox" name="new_projects" id="new_projects_{{ p }}" value="{{ p }}" />
-        <label for="new_projects_{{ p }}">{{ PROJECTS[p] }}</label>
-      </div>
-      {% end %}
-    </div></div>
-    <div class="input"><label for="new_sites">Site: </label><div class="project_box">
-      {% for s in SITES %}
-      <div class="checkbox">
-        <input type="checkbox" name="new_sites" id="new_sites_{{ s }}" value="{{ s }}" />
-        <label for="new_sites_{{ s }}">{{ SITES[s] }}</label>
-      </div>
-      {% end %}
-    </div></div>
+    <div class="input vcenter"><label for="new_title">Title: </label><textarea id="new_title" name="new_title" autocomplete="off"></textarea></div>
+    <div class="input"><label for="new_authors">Authors: </label><textarea id="new_authors" name="new_authors" autocomplete="off"></textarea></div>
+    <div class="input vcenter"><label for="new_date">Date of publication: </label><input type="date" id="new_date" name="new_date" autocomplete="off" /></div>
+    <div class="input"><label for="new_abstract">Abstract: </label><textarea id="new_abstract" name="new_abstract" autocomplete="off"></textarea></div>
+    <div class="input"><label for="new_citation">Citation:</label><textarea id="new_citation" name="new_citation" autocomplete="off"></textarea></div>
+    <div class="input"><label for="new_downloads">Download links:</label><textarea id="new_downloads" name="new_downloads" autocomplete="off"></textarea></div>
+    <div class="input">
+      <fieldset aria-label="New publication type">
+        <legend>Type</legend>
+        <div class="type_box">
+          {% for t in PUBLICATION_TYPES %}
+          <div class="checkbox">
+            <input type="radio" name="new_type" id="new_type_{{ t }}" value="{{ t }}" autocomplete="off" />
+            <label for="new_type_{{ t }}">{{ PUBLICATION_TYPES[t] }}</label>
+          </div>
+          {% end %}
+        </div>
+      </fieldset>
+      <fieldset aria-label="New publication project">
+        <legend>Project</legend>
+        <div class="projects_box">
+          {% for p in PROJECTS %}
+          <div class="checkbox">
+            <input type="checkbox" name="new_projects" id="new_projects_{{ p }}" value="{{ p }}" autocomplete="off" />
+            <label for="new_projects_{{ p }}">{{ PROJECTS[p] }}</label>
+          </div>
+          {% end %}
+        </div>
+      </fieldset>
+      <fieldset aria-label="New publication site">
+        <legend>Site</legend>
+        <div class="project_box">
+          {% for s in SITES %}
+          <div class="checkbox">
+            <input type="checkbox" name="new_sites" id="new_sites_{{ s }}" value="{{ s }}" autocomplete="off" />
+            <label for="new_sites_{{ s }}">{{ SITES[s] }}</label>
+          </div>
+          {% end %}
+        </div>
+      </fieldset>
+    </div>
     {% module xsrf_form_html() %}
     {% if search %}<input type="hidden" name="search" value="{{ search }}" />{% end %}
     {% if start_date %}<input type="hidden" name="start_date" value="{{ start_date }}" />{% end %}
@@ -53,37 +67,52 @@
 </div>
 <div class="publication_filters">
   <h2>Existing Publications:</h2>
-  <form action="{{ request.path }}" method="get" autocomplete="off">
-    <div class="input vcenter search"><label for="search">Text search: </label><input type="text" name="search" value="{{ search }}" /></div>
+  <form action="{{ request.path }}" method="get" autocomplete="off" aria-label="Search publications">
+    <div class="input vcenter search"><label for="search">Text search: </label><input type="text" id="search" name="search" value="{{ search }}" /></div>
     <div class="col">
-      <div class="input vcenter"><label for="start_date">Start date: </label><input type="date" name="start_date" value="{{ start_date }}" /></div>
-      <div class="input vcenter"><label for="end_date">End date: </label><input type="date" name="end_date" value="{{ end_date }}" /></div>
-      <div class="input"><label for="type">Type: </label><div class="type_box">
-        {% for t in PUBLICATION_TYPES %}
-        <div class="checkbox">
-          <input type="checkbox" name="type" id="type_{{ t }}" value="{{ t }}" {% if t in type %}checked {% end %}/>
-          <label for="type_{{ t }}">{{ PUBLICATION_TYPES[t] }}</label>
-        </div>
-        {% end %}
-      </div></div>
+      <div class="input vcenter"><label for="start_date">Start date: </label><input type="date" id="start_date" name="start_date" value="{{ start_date }}" /></div>
+      <div class="input vcenter"><label for="end_date">End date: </label><input type="date" id="end_date" name="end_date" value="{{ end_date }}" /></div>
+      <div class="input">
+        <fieldset>
+          <legend>Type</legend>
+          <div class="type_box">
+            {% for t in PUBLICATION_TYPES %}
+            <div class="checkbox">
+              <input type="checkbox" name="type" id="type_{{ t }}" value="{{ t }}" {% if t in type %}checked {% end %}/>
+              <label for="type_{{ t }}">{{ PUBLICATION_TYPES[t] }}</label>
+            </div>
+            {% end %}
+          </div>
+        </fieldset>
+      </div>
     </div><div class="col">
-      <div class="input"><label for="projects">Project: </label><div class="projects_box">
-        {% for p in PROJECTS %}
-        <div class="checkbox">
-          <input type="checkbox" name="projects" id="projects_{{ p }}" value="{{ p }}" {% if p in projects %}checked {% end %}/>
-          <label for="projects_{{ p }}">{{ PROJECTS[p] }}</label>
-        </div>
-        {% end %}
-      </div></div>
+      <div class="input">
+        <fieldset>
+          <legend>Project</legend>
+          <div class="projects_box">
+            {% for p in PROJECTS %}
+            <div class="checkbox">
+              <input type="checkbox" name="projects" id="projects_{{ p }}" value="{{ p }}" {% if p in projects %}checked {% end %}/>
+              <label for="projects_{{ p }}">{{ PROJECTS[p] }}</label>
+            </div>
+            {% end %}
+          </div>
+        </fieldset>
+      </div>
     </div><div class="col">
-      <div class="input"><label for="sites">Site: </label><div class="sites_box">
-        {% for p in SITES %}
-        <div class="checkbox">
-          <input type="checkbox" name="sites" id="sites_{{ p }}" value="{{ p }}" {% if p in sites %}checked {% end %}/>
-          <label for="sites_{{ p }}">{{ SITES[p] }}</label>
-        </div>
-        {% end %}
-      </div></div>
+      <div class="input">
+        <fieldset>
+          <legend>Site</legend>
+          <div class="sites_box">
+            {% for p in SITES %}
+            <div class="checkbox">
+              <input type="checkbox" name="sites" id="sites_{{ p }}" value="{{ p }}" {% if p in sites %}checked {% end %}/>
+              <label for="sites_{{ p }}">{{ SITES[p] }}</label>
+            </div>
+            {% end %}
+          </div>
+        </fieldset>
+      </div>
     </div>
     {% module xsrf_form_html() %}
     <div class="input vcenter submit"><input type="submit" value="Filter" /></div>
@@ -124,7 +153,7 @@
   {% end %}
   <div class="actions">
     <button class="edit">Edit</button>
-    <form class="delete" action="{{ request.path }}" method="post">
+    <form class="delete" action="{{ request.path }}" method="post" aria-label="Delete publication">
       {% module xsrf_form_html() %}
       {% if search %}<input type="hidden" name="search" value="{{ search }}" />{% end %}
       {% if start_date %}<input type="hidden" name="start_date" value="{{ start_date }}" />{% end %}
@@ -209,10 +238,10 @@ $('button.edit').click(function(){
   $('.new textarea[name="new_title"]').val(title);
   $('.new textarea[name="new_authors"]').val(authors.join('\n'));
   $('.new input[name="new_date"]').val(date);
-  $('.new select[name="new_type"]').val(pub_type);
   $('.new textarea[name="new_abstract"]').val(abstract_text);
   $('.new textarea[name="new_citation"]').val(citation);
   $('.new textarea[name="new_downloads"]').val(downloads.join('\n'));
+  $('.new input[name="new_type"]').val([pub_type]);
   $('.new input[name="new_projects"]').val(projects);
   $('.new input[name="new_sites"]').val(sites);
 

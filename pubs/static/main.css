@@ -162,3 +162,16 @@ h2.editing {
 .publication_filters {
     margin: 1rem 0;
 }
+
+fieldset {
+    margin: .5rem;
+}
+legend {
+  padding: 0 .3rem 0 .2rem;
+}
+fieldset .checkbox {
+  margin: .2rem 0;
+}
+fieldset .checkbox > input {
+  margin-left: .2rem;
+}

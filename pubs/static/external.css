@@ -41,6 +41,18 @@
     font-size: 90%;
     font-style: italic;
 }
+.publication_filters fieldset {
+    margin: .5rem;
+}
+.publication_filters legend {
+  padding: 0 .3rem 0 .2rem;
+}
+.publication_filters fieldset .checkbox {
+  margin: .2rem 0;
+}
+.publication_filters fieldset .checkbox > input {
+  margin-left: .2rem;
+}
 
 article.publication {
     margin: 1em 0 2em;
